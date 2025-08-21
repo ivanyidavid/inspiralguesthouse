@@ -1,0 +1,53 @@
+Create a website for a rental house
+Give it a modern, airbnb like look. 
+Where I mention photo names, use those exact photos.
+
+Use this logic for structure: 
+
+1.Section:The hero photo should be this: common room-IMG_0083-HDR
+
+Create a button called "Book now"
+
+2.Section:After there should be a section of 3 cards for 3 features  : 
+
+1st card : Peaceful , Mesmerizing panoramic views of the hills
+: IMG_6039
+2nd card: can host up to 11 guests: Ideal for groups, team buildings, parties, retreats, freelancers, photo :bedroom1-IMG_9992-HDR
+3rd card: fully-equipped stylish kitchen , photo: kitchen-DSC_8917-HDR
+ 
+3.Section:After there should be another section of 3 cards for 3 features  : 
+
+4th card: A vast living room with an extra-large couch and a sofa-bed, great for socializing, photo: common room-DSC_8961 
+5th card: 2 spectacular fully-equipped bathrooms photo: bathroom downstairs-DSC_8881
+6th card: Large balconies on both floors, photo : terrace-IMG_0106
+
+
+4.Section: Use a carousel for features and add emojis to each features 
+
+5.Section:Gallery: section on the bottom: upload all photos.
+
+6.Section:Booking calendar function with a dummy backend database.
+
+
+--------------
+
+raw text: 
+Our guest house will give you an unforgettable escape from the hustle of everyday life.
+Ideal for groups of friends, team buildings, parties, and retreats, it can host up to 11 guests.
+The space
+Our Guest House is located on the hills of Verőce, and it can welcome up to 11 guests.
+It features:
+*Mesmerizing panoramic views of the hills
+*Peaceful environment day and night
+*3 bedrooms for a total of 7 guests, each one with a working desk
+*A vast living room with an extra-large couch (can be turned into a bed for 2) and a second sofa-bed that can accommodate 2 more guests.
+*A large dining space
+*A stylish kitchen
+*2 fully-equipped bathrooms
+*Large balconies on both floors
+*A big garden and a small spice garden
+*Parking space: up to 3 cars. You can reach the house easily by car on a paved road a few minutes away from the Danube
+*The village is reachable from Budapest Nyugati station in 35 minutes.
+*10-15 minutes walk from the train station (10 minutes with the shortcut on the hill, longer on the regular road)
+Registration Details
+MA24090618
