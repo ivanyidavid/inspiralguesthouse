@@ -183,6 +183,56 @@ export class GoogleSheetsService {
     }
   }
 
+  async getRoomNightlyPrices(): Promise<{ [roomType: string]: number }> {
+    try {
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: SHEET_ID,
+        range: 'A:Z', // Get all columns to find pricing
+      });
+
+      const rows = response.data.values;
+      if (!rows || rows.length === 0) {
+        console.log('No data found in sheet for room pricing');
+        return {};
+      }
+
+      const headerRow = rows[0];
+      const roomTypes = ['2x Single Bed Bedroom', 'Double Bed Bedroom', 'Bunk Bed Bedroom', 'Whole House'];
+      const prices: { [roomType: string]: number } = {};
+
+      // Find the pricing row (typically row 2, after headers)
+      for (let i = 1; i < Math.min(rows.length, 3); i++) {
+        const row = rows[i];
+        let foundPrices = false;
+
+        // Check each room type column for pricing
+        roomTypes.forEach((roomType) => {
+          const columnIndex = headerRow.findIndex((header: string) => header.trim() === roomType);
+          if (columnIndex !== -1 && row[columnIndex]) {
+            const priceValue = row[columnIndex].toString().trim();
+            const price = parseFloat(priceValue.replace(/[^\d.-]/g, ''));
+            if (!isNaN(price) && price > 0) {
+              prices[roomType] = price;
+              foundPrices = true;
+            }
+          }
+        });
+
+        // If we found prices in this row, return them
+        if (foundPrices) {
+          console.log(`Loaded room nightly prices from Google Sheets:`, prices);
+          return prices;
+        }
+      }
+
+      console.log('No pricing row found in Google Sheets, using defaults');
+      return {};
+    } catch (error) {
+      console.error('Error reading room nightly prices from Google Sheets:', error);
+      return {};
+    }
+  }
+
   async getExtraGuestFeeForDateRange(startDate: string, endDate: string): Promise<number> {
     try {
       const response = await this.sheets.spreadsheets.values.get({

@@ -111,6 +111,7 @@ export default function BookingSection() {
     extraGuests: number;
     extraGuestFeeTotal: number;
     total: number;
+    pricePerNight?: number;
   } | null>(null);
 
   // Fetch live price when inputs change
@@ -140,6 +141,40 @@ export default function BookingSection() {
 
     fetchPrice();
   }, [checkInDate, checkOutDate, selectedRoom, guests]);
+
+  // Fetch prices for all room types when dates change so cards can show live per-night rates
+  const [priceMap, setPriceMap] = useState<Record<string, { pricePerNight: number; nights: number; total: number } | null>>({});
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      if (!checkInDate || !checkOutDate) {
+        setPriceMap({});
+        return;
+      }
+
+      const start = format(checkInDate, "yyyy-MM-dd");
+      const end = format(checkOutDate, "yyyy-MM-dd");
+
+      const entries = await Promise.all(
+        roomOptions.map(async (room) => {
+          try {
+            const resp = await fetch(
+              `/api/price?roomType=${encodeURIComponent(room.id)}&checkIn=${start}&checkOut=${end}&guests=${guests}`
+            );
+            if (!resp.ok) return [room.id, null] as const;
+            const data = await resp.json();
+            return [room.id, { pricePerNight: data.pricePerNight, nights: data.nights, total: data.total }] as const;
+          } catch (e) {
+            return [room.id, null] as const;
+          }
+        })
+      );
+
+      setPriceMap(Object.fromEntries(entries));
+    };
+
+    fetchAll();
+  }, [checkInDate, checkOutDate, guests]);
 
   // Get unavailable dates from existing bookings for selected room type
   const bookingUnavailableDates = bookings
@@ -352,7 +387,7 @@ export default function BookingSection() {
                             Up to {room.maxGuests} guests
                           </span>
                           <span className="font-semibold text-airbnb-dark">
-                            €{room.pricePerNight}/night
+                            €{(priceMap[room.id]?.pricePerNight ?? room.pricePerNight)}/night
                           </span>
                         </div>
                       </div>
@@ -464,7 +499,7 @@ export default function BookingSection() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-airbnb-gray">Rate:</span>
-                      <span className="text-airbnb-dark font-medium">€{currentRoom.pricePerNight}/night</span>
+                      <span className="text-airbnb-dark font-medium">€{(serverPrice?.pricePerNight ?? priceMap[selectedRoom]?.pricePerNight ?? currentRoom.pricePerNight)}/night</span>
                     </div>
                     
                     {checkInDate && checkOutDate && (
@@ -487,7 +522,7 @@ export default function BookingSection() {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-airbnb-gray">Rate:</span>
-                          <span className="text-airbnb-dark font-medium">€{currentRoom.pricePerNight} × {nights}</span>
+                          <span className="text-airbnb-dark font-medium">€{(serverPrice?.pricePerNight ?? priceMap[selectedRoom]?.pricePerNight ?? currentRoom.pricePerNight)} × {nights}</span>
                         </div>
                         {selectedRoom === "whole-house" && applicableWholeHouseCleaningFee > 0 && (
                           <div className="flex justify-between">
