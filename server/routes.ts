@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertBookingSchema } from "@shared/schema";
 import { z } from "zod";
 import { googleSheetsService } from "./googleSheets";
+import { computePrice } from "./pricing";
 import { emailService } from "./emailService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -83,6 +84,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching extra guest fee:", error);
       res.status(500).json({ message: "Failed to fetch extra guest fee" });
+    }
+  });
+
+  // Compute pricing for a requested booking (returns breakdown)
+  app.get("/api/price", async (req, res) => {
+    try {
+      const { roomType, checkIn, checkOut, guests } = req.query;
+
+      if (!roomType || !checkIn || !checkOut || !guests) {
+        res.status(400).json({ message: "roomType, checkIn, checkOut and guests are required" });
+        return;
+      }
+
+      const breakdown = await computePrice({
+        roomType: roomType as string,
+        checkIn: checkIn as string,
+        checkOut: checkOut as string,
+        guests: parseInt(guests as string, 10),
+      });
+
+      res.json(breakdown);
+    } catch (error) {
+      console.error('Error computing price:', error);
+      res.status(500).json({ message: 'Failed to compute price' });
     }
   });
 
@@ -181,6 +206,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return;
       }
       
+      // Recompute authoritative price server-side and override client-submitted price
+      try {
+        const breakdown = await computePrice({
+          roomType: validatedData.roomType,
+          checkIn: validatedData.checkIn,
+          checkOut: validatedData.checkOut,
+          guests: validatedData.guests,
+        });
+
+        // store total in cents
+        const totalPriceCents = Math.round(breakdown.total * 100);
+        validatedData.totalPrice = totalPriceCents;
+      } catch (err) {
+        console.error('Failed to recompute price, proceeding with submitted price:', err);
+      }
+
       const booking = await storage.createBooking(validatedData);
       
       // Send email notification

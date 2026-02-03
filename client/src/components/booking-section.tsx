@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -102,6 +102,45 @@ export default function BookingSection() {
 
   const extraGuestFeePerDay = extraGuestFeeData?.extraGuestFee || 0;
 
+  // Server-side price breakdown (fetched from /api/price)
+  const [serverPrice, setServerPrice] = useState<{
+    nights: number;
+    roomCost: number;
+    cleaningFee: number;
+    extraGuestFeePerDay: number;
+    extraGuests: number;
+    extraGuestFeeTotal: number;
+    total: number;
+  } | null>(null);
+
+  // Fetch live price when inputs change
+  useEffect(() => {
+    const fetchPrice = async () => {
+      if (!checkInDate || !checkOutDate) {
+        setServerPrice(null);
+        return;
+      }
+
+      const start = format(checkInDate, "yyyy-MM-dd");
+      const end = format(checkOutDate, "yyyy-MM-dd");
+      try {
+        const resp = await fetch(
+          `/api/price?roomType=${encodeURIComponent(selectedRoom)}&checkIn=${start}&checkOut=${end}&guests=${guests}`
+        );
+        if (!resp.ok) {
+          setServerPrice(null);
+          return;
+        }
+        const data = await resp.json();
+        setServerPrice(data);
+      } catch (e) {
+        setServerPrice(null);
+      }
+    };
+
+    fetchPrice();
+  }, [checkInDate, checkOutDate, selectedRoom, guests]);
+
   // Get unavailable dates from existing bookings for selected room type
   const bookingUnavailableDates = bookings
     .filter(booking => booking.roomType === selectedRoom || booking.roomType === "whole-house" || selectedRoom === "whole-house")
@@ -140,6 +179,10 @@ export default function BookingSection() {
 
   const createBookingMutation = useMutation({
     mutationFn: async (bookingData: any) => {
+      // If we have a server-side price, prefer submitting that authoritative value
+      if ((bookingData as any) && serverPrice) {
+        bookingData.totalPrice = Math.round(serverPrice.total * 100);
+      }
       const response = await apiRequest("POST", "/api/bookings", bookingData);
       return response.json();
     },
@@ -199,14 +242,18 @@ export default function BookingSection() {
     }
 
     const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
-    const roomCost = nights * currentRoom.pricePerNight;
-    const applicableCleaningFee = selectedRoom === "whole-house" ? wholeHouseCleaningFee : roomCleaningFee;
-    
-    // Calculate extra guest fee (only for whole house bookings with more than 6 guests)
-    const extraGuests = selectedRoom === "whole-house" && guests > 6 ? guests - 6 : 0;
-    const extraGuestFee = extraGuests * extraGuestFeePerDay;
-    
-    const totalPrice = (roomCost + applicableCleaningFee + extraGuestFee) * 100; // Convert to cents
+
+    let totalPrice: number;
+    if (serverPrice) {
+      totalPrice = Math.round(serverPrice.total * 100);
+    } else {
+      const roomCost = nights * currentRoom.pricePerNight;
+      const applicableCleaningFee = selectedRoom === "whole-house" ? wholeHouseCleaningFee : roomCleaningFee;
+      // Calculate extra guest fee (only for whole house bookings with more than 6 guests)
+      const extraGuests = selectedRoom === "whole-house" && guests > 6 ? guests - 6 : 0;
+      const extraGuestFee = extraGuests * extraGuestFeePerDay;
+      totalPrice = Math.round((roomCost + applicableCleaningFee + extraGuestFee) * 100); // Convert to cents
+    }
 
     createBookingMutation.mutate({
       checkIn: format(checkInDate, "yyyy-MM-dd"),
@@ -236,15 +283,15 @@ export default function BookingSection() {
     ? Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
     : 0;
   
-  const roomCost = nights * currentRoom.pricePerNight;
-  const applicableWholeHouseCleaningFee = selectedRoom === "whole-house" ? wholeHouseCleaningFee : 0;
-  const applicableRoomCleaningFee = selectedRoom !== "whole-house" ? roomCleaningFee : 0;
-  
+  const roomCost = serverPrice ? serverPrice.roomCost : nights * currentRoom.pricePerNight;
+  const applicableWholeHouseCleaningFee = serverPrice ? serverPrice.cleaningFee : (selectedRoom === "whole-house" ? wholeHouseCleaningFee : 0);
+  const applicableRoomCleaningFee = serverPrice ? 0 : (selectedRoom !== "whole-house" ? roomCleaningFee : 0);
+
   // Calculate extra guest fee for display (only for whole house bookings with more than 6 guests)
-  const extraGuests = selectedRoom === "whole-house" && guests > 6 ? guests - 6 : 0;
-  const extraGuestFee = extraGuests * extraGuestFeePerDay;
-  
-  const totalPrice = roomCost + applicableWholeHouseCleaningFee + applicableRoomCleaningFee + extraGuestFee;
+  const extraGuests = serverPrice ? serverPrice.extraGuests : (selectedRoom === "whole-house" && guests > 6 ? guests - 6 : 0);
+  const extraGuestFee = serverPrice ? serverPrice.extraGuestFeeTotal : (extraGuests * extraGuestFeePerDay);
+
+  const totalPrice = serverPrice ? serverPrice.total : (roomCost + applicableWholeHouseCleaningFee + applicableRoomCleaningFee + extraGuestFee);
 
   return (
     <section id="booking" className="py-16 bg-airbnb-light">
