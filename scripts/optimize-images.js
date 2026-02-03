@@ -7,7 +7,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const inputDir = path.join(__dirname, '../attached_assets/photos');
-const outputDir = path.join(__dirname, '../attached_assets/photos/webp');
+const publicPhotosDir = path.join(__dirname, '../client/public/assets/photos');
+const outputDir = path.join(publicPhotosDir, 'webp');
 const imageMap = {};
 
 // Ensure output directory exists
@@ -34,21 +35,37 @@ async function processImage(inputPath, filename) {
     const metadata = await sharp(inputPath).metadata();
     const originalWidth = metadata.width;
     
+    // Ensure public photos directories exist
+    if (!fs.existsSync(publicPhotosDir)) {
+      fs.mkdirSync(publicPhotosDir, { recursive: true });
+    }
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+
     // Determine fallback format - convert HEIC to JPG, keep others as-is
     let fallbackFilename = filename;
     if (ext === '.heic') {
       fallbackFilename = `${baseName}.jpg`;
-      // Convert HEIC to JPG as fallback
-      const fallbackPath = path.join(inputDir, fallbackFilename);
+      // Convert HEIC to JPG as fallback into public photos dir
+      const fallbackPath = path.join(publicPhotosDir, fallbackFilename);
       if (!fs.existsSync(fallbackPath)) {
         await sharp(inputPath)
           .jpeg({ quality: 90 })
           .toFile(fallbackPath);
-        console.log(`✓ Created JPG fallback: ${fallbackFilename}`);
+        console.log(`✓ Created JPG fallback in public assets: ${fallbackFilename}`);
+      }
+    } else {
+      // Copy original fallback (jpg/png) into public photos dir if not already present
+      const srcFallbackPath = path.join(inputDir, filename);
+      const destFallbackPath = path.join(publicPhotosDir, filename);
+      if (!fs.existsSync(destFallbackPath)) {
+        fs.copyFileSync(srcFallbackPath, destFallbackPath);
+        console.log(`✓ Copied fallback to public assets: ${filename}`);
       }
     }
-    
-    // Initialize image map entry
+
+    // Initialize image map entry (paths reference 'photos/...' which are served under /assets)
     imageMap[baseName] = {
       webp: {},
       fallback: `photos/${fallbackFilename}`,
@@ -61,18 +78,18 @@ async function processImage(inputPath, filename) {
       if (width > originalWidth) continue;
       
       const outputPath = path.join(outputDir, `${baseName}-${width}.webp`);
-      
+
       await sharp(inputPath)
-        .resize(width, null, { 
+        .resize(width, null, {
           withoutEnlargement: true,
           fit: 'inside'
         })
-        .webp({ 
+        .webp({
           quality: filename.includes('exterior') || filename.includes('view') ? 80 : 75,
-          effort: 6 
+          effort: 6
         })
         .toFile(outputPath);
-      
+
       imageMap[baseName].webp[width] = `photos/webp/${baseName}-${width}.webp`;
     }
 
@@ -83,7 +100,7 @@ async function processImage(inputPath, filename) {
       .webp({ quality: 20 })
       .blur(1)
       .toFile(lqipPath);
-    
+
     imageMap[baseName].lqip = `photos/webp/${baseName}-blur.webp`;
     
     console.log(`✓ Generated ${Object.keys(imageMap[baseName].webp).length} WebP variants for ${filename}`);
