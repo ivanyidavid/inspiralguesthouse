@@ -60,9 +60,9 @@ export async function computePrice(req: PriceRequest): Promise<PriceBreakdown> {
 
   let pricePerNight: number;
   if (foundAny) {
-    // Use the first available night's price to populate pricePerNight for UI display
-    const first = perNightPrices.find((v) => v !== null) as number | undefined;
-    pricePerNight = first ?? (DEFAULT_ROOM_PRICING[roomType] ?? DEFAULT_ROOM_PRICING['whole-house']);
+    // Calculate average nightly price across all nights in the booking period for UI display
+    const validPrices = perNightPrices.filter((v) => v !== null) as number[];
+    pricePerNight = validPrices.length > 0 ? roomCost / validPrices.length : (DEFAULT_ROOM_PRICING[roomType] ?? DEFAULT_ROOM_PRICING['whole-house']);
   } else {
     // fallback: try sheet-wide single value or default
     const sheetPrices = await googleSheetsService.getRoomNightlyPrices();
