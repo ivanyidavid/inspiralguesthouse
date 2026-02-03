@@ -74,42 +74,6 @@ export const imageMap = {
     "alt": "Bathroom Downstairs DSC_8886",
     "lqip": "photos/webp/bathroom downstairs-DSC_8886-blur.webp"
   },
-  "bathroom upper-IMG_0093-HDR": {
-    "webp": {
-      "320": "photos/webp/bathroom upper-IMG_0093-HDR-320.webp",
-      "640": "photos/webp/bathroom upper-IMG_0093-HDR-640.webp",
-      "960": "photos/webp/bathroom upper-IMG_0093-HDR-960.webp",
-      "1280": "photos/webp/bathroom upper-IMG_0093-HDR-1280.webp",
-      "1600": "photos/webp/bathroom upper-IMG_0093-HDR-1600.webp"
-    },
-    "fallback": "photos/bathroom upper-IMG_0093-HDR.jpg",
-    "alt": "Bathroom Upper IMG_0093 HDR",
-    "lqip": "photos/webp/bathroom upper-IMG_0093-HDR-blur.webp"
-  },
-  "bedroom1-IMG_9998": {
-    "webp": {
-      "320": "photos/webp/bedroom1-IMG_9998-320.webp",
-      "640": "photos/webp/bedroom1-IMG_9998-640.webp",
-      "960": "photos/webp/bedroom1-IMG_9998-960.webp",
-      "1280": "photos/webp/bedroom1-IMG_9998-1280.webp",
-      "1600": "photos/webp/bedroom1-IMG_9998-1600.webp"
-    },
-    "fallback": "photos/bedroom1-IMG_9998.jpg",
-    "alt": "Bedroom1 IMG_9998",
-    "lqip": "photos/webp/bedroom1-IMG_9998-blur.webp"
-  },
-  "bedroom1-IMG_9992-HDR": {
-    "webp": {
-      "320": "photos/webp/bedroom1-IMG_9992-HDR-320.webp",
-      "640": "photos/webp/bedroom1-IMG_9992-HDR-640.webp",
-      "960": "photos/webp/bedroom1-IMG_9992-HDR-960.webp",
-      "1280": "photos/webp/bedroom1-IMG_9992-HDR-1280.webp",
-      "1600": "photos/webp/bedroom1-IMG_9992-HDR-1600.webp"
-    },
-    "fallback": "photos/bedroom1-IMG_9992-HDR.jpg",
-    "alt": "Bedroom1 IMG_9992 HDR",
-    "lqip": "photos/webp/bedroom1-IMG_9992-HDR-blur.webp"
-  },
   "bathroom upper-IMG_0101": {
     "webp": {
       "320": "photos/webp/bathroom upper-IMG_0101-320.webp",
@@ -121,6 +85,18 @@ export const imageMap = {
     "fallback": "photos/bathroom upper-IMG_0101.jpg",
     "alt": "Bathroom Upper IMG_0101",
     "lqip": "photos/webp/bathroom upper-IMG_0101-blur.webp"
+  },
+  "bathroom upper-IMG_0093-HDR": {
+    "webp": {
+      "320": "photos/webp/bathroom upper-IMG_0093-HDR-320.webp",
+      "640": "photos/webp/bathroom upper-IMG_0093-HDR-640.webp",
+      "960": "photos/webp/bathroom upper-IMG_0093-HDR-960.webp",
+      "1280": "photos/webp/bathroom upper-IMG_0093-HDR-1280.webp",
+      "1600": "photos/webp/bathroom upper-IMG_0093-HDR-1600.webp"
+    },
+    "fallback": "photos/bathroom upper-IMG_0093-HDR.jpg",
+    "alt": "Bathroom Upper IMG_0093 HDR",
+    "lqip": "photos/webp/bathroom upper-IMG_0093-HDR-blur.webp"
   },
   "bedroom1-IMG_9996": {
     "webp": {
@@ -134,6 +110,30 @@ export const imageMap = {
     "alt": "Bedroom1 IMG_9996",
     "lqip": "photos/webp/bedroom1-IMG_9996-blur.webp"
   },
+  "bedroom1-IMG_9992-HDR": {
+    "webp": {
+      "320": "photos/webp/bedroom1-IMG_9992-HDR-320.webp",
+      "640": "photos/webp/bedroom1-IMG_9992-HDR-640.webp",
+      "960": "photos/webp/bedroom1-IMG_9992-HDR-960.webp",
+      "1280": "photos/webp/bedroom1-IMG_9992-HDR-1280.webp",
+      "1600": "photos/webp/bedroom1-IMG_9992-HDR-1600.webp"
+    },
+    "fallback": "photos/bedroom1-IMG_9992-HDR.jpg",
+    "alt": "Bedroom1 IMG_9992 HDR",
+    "lqip": "photos/webp/bedroom1-IMG_9992-HDR-blur.webp"
+  },
+  "bedroom1-IMG_9998": {
+    "webp": {
+      "320": "photos/webp/bedroom1-IMG_9998-320.webp",
+      "640": "photos/webp/bedroom1-IMG_9998-640.webp",
+      "960": "photos/webp/bedroom1-IMG_9998-960.webp",
+      "1280": "photos/webp/bedroom1-IMG_9998-1280.webp",
+      "1600": "photos/webp/bedroom1-IMG_9998-1600.webp"
+    },
+    "fallback": "photos/bedroom1-IMG_9998.jpg",
+    "alt": "Bedroom1 IMG_9998",
+    "lqip": "photos/webp/bedroom1-IMG_9998-blur.webp"
+  },
   "bedroom2-DSC_8860-HDR": {
     "webp": {
       "320": "photos/webp/bedroom2-DSC_8860-HDR-320.webp",
@@ -146,18 +146,6 @@ export const imageMap = {
     "alt": "Bedroom2 DSC_8860 HDR",
     "lqip": "photos/webp/bedroom2-DSC_8860-HDR-blur.webp"
   },
-  "bedroom2-DSC_8870": {
-    "webp": {
-      "320": "photos/webp/bedroom2-DSC_8870-320.webp",
-      "640": "photos/webp/bedroom2-DSC_8870-640.webp",
-      "960": "photos/webp/bedroom2-DSC_8870-960.webp",
-      "1280": "photos/webp/bedroom2-DSC_8870-1280.webp",
-      "1600": "photos/webp/bedroom2-DSC_8870-1600.webp"
-    },
-    "fallback": "photos/bedroom2-DSC_8870.jpg",
-    "alt": "Bedroom2 DSC_8870",
-    "lqip": "photos/webp/bedroom2-DSC_8870-blur.webp"
-  },
   "bedroom2-DSC_8871-HDR": {
     "webp": {
       "320": "photos/webp/bedroom2-DSC_8871-HDR-320.webp",
@@ -169,6 +157,18 @@ export const imageMap = {
     "fallback": "photos/bedroom2-DSC_8871-HDR.jpg",
     "alt": "Bedroom2 DSC_8871 HDR",
     "lqip": "photos/webp/bedroom2-DSC_8871-HDR-blur.webp"
+  },
+  "bedroom2-DSC_8870": {
+    "webp": {
+      "320": "photos/webp/bedroom2-DSC_8870-320.webp",
+      "640": "photos/webp/bedroom2-DSC_8870-640.webp",
+      "960": "photos/webp/bedroom2-DSC_8870-960.webp",
+      "1280": "photos/webp/bedroom2-DSC_8870-1280.webp",
+      "1600": "photos/webp/bedroom2-DSC_8870-1600.webp"
+    },
+    "fallback": "photos/bedroom2-DSC_8870.jpg",
+    "alt": "Bedroom2 DSC_8870",
+    "lqip": "photos/webp/bedroom2-DSC_8870-blur.webp"
   },
   "bedroom2-IMG_0021": {
     "webp": {
@@ -194,17 +194,17 @@ export const imageMap = {
     "alt": "Bedroom2 IMG_0027",
     "lqip": "photos/webp/bedroom2-IMG_0027-blur.webp"
   },
-  "bunk bedroom-DSC_8850": {
+  "bunk bedroom-DSC_8843": {
     "webp": {
-      "320": "photos/webp/bunk bedroom-DSC_8850-320.webp",
-      "640": "photos/webp/bunk bedroom-DSC_8850-640.webp",
-      "960": "photos/webp/bunk bedroom-DSC_8850-960.webp",
-      "1280": "photos/webp/bunk bedroom-DSC_8850-1280.webp",
-      "1600": "photos/webp/bunk bedroom-DSC_8850-1600.webp"
+      "320": "photos/webp/bunk bedroom-DSC_8843-320.webp",
+      "640": "photos/webp/bunk bedroom-DSC_8843-640.webp",
+      "960": "photos/webp/bunk bedroom-DSC_8843-960.webp",
+      "1280": "photos/webp/bunk bedroom-DSC_8843-1280.webp",
+      "1600": "photos/webp/bunk bedroom-DSC_8843-1600.webp"
     },
-    "fallback": "photos/bunk bedroom-DSC_8850.jpg",
-    "alt": "Bunk Bedroom DSC_8850",
-    "lqip": "photos/webp/bunk bedroom-DSC_8850-blur.webp"
+    "fallback": "photos/bunk bedroom-DSC_8843.jpg",
+    "alt": "Bunk Bedroom DSC_8843",
+    "lqip": "photos/webp/bunk bedroom-DSC_8843-blur.webp"
   },
   "bunk bedroom-DSC_8848": {
     "webp": {
@@ -217,18 +217,6 @@ export const imageMap = {
     "fallback": "photos/bunk bedroom-DSC_8848.jpg",
     "alt": "Bunk Bedroom DSC_8848",
     "lqip": "photos/webp/bunk bedroom-DSC_8848-blur.webp"
-  },
-  "bunk bedroom-DSC_8843": {
-    "webp": {
-      "320": "photos/webp/bunk bedroom-DSC_8843-320.webp",
-      "640": "photos/webp/bunk bedroom-DSC_8843-640.webp",
-      "960": "photos/webp/bunk bedroom-DSC_8843-960.webp",
-      "1280": "photos/webp/bunk bedroom-DSC_8843-1280.webp",
-      "1600": "photos/webp/bunk bedroom-DSC_8843-1600.webp"
-    },
-    "fallback": "photos/bunk bedroom-DSC_8843.jpg",
-    "alt": "Bunk Bedroom DSC_8843",
-    "lqip": "photos/webp/bunk bedroom-DSC_8843-blur.webp"
   },
   "bunk bedroom-DSC_8845": {
     "webp": {
@@ -254,6 +242,18 @@ export const imageMap = {
     "alt": "Bunk Bedroom IMG_0001 HDR",
     "lqip": "photos/webp/bunk bedroom-IMG_0001-HDR-blur.webp"
   },
+  "bunk bedroom-DSC_8850": {
+    "webp": {
+      "320": "photos/webp/bunk bedroom-DSC_8850-320.webp",
+      "640": "photos/webp/bunk bedroom-DSC_8850-640.webp",
+      "960": "photos/webp/bunk bedroom-DSC_8850-960.webp",
+      "1280": "photos/webp/bunk bedroom-DSC_8850-1280.webp",
+      "1600": "photos/webp/bunk bedroom-DSC_8850-1600.webp"
+    },
+    "fallback": "photos/bunk bedroom-DSC_8850.jpg",
+    "alt": "Bunk Bedroom DSC_8850",
+    "lqip": "photos/webp/bunk bedroom-DSC_8850-blur.webp"
+  },
   "bunk bedroom-IMG_0015": {
     "webp": {
       "320": "photos/webp/bunk bedroom-IMG_0015-320.webp",
@@ -265,18 +265,6 @@ export const imageMap = {
     "fallback": "photos/bunk bedroom-IMG_0015.jpg",
     "alt": "Bunk Bedroom IMG_0015",
     "lqip": "photos/webp/bunk bedroom-IMG_0015-blur.webp"
-  },
-  "common room-IMG_0068-HDR": {
-    "webp": {
-      "320": "photos/webp/common room-IMG_0068-HDR-320.webp",
-      "640": "photos/webp/common room-IMG_0068-HDR-640.webp",
-      "960": "photos/webp/common room-IMG_0068-HDR-960.webp",
-      "1280": "photos/webp/common room-IMG_0068-HDR-1280.webp",
-      "1600": "photos/webp/common room-IMG_0068-HDR-1600.webp"
-    },
-    "fallback": "photos/common room-IMG_0068-HDR.jpg",
-    "alt": "Common Room IMG_0068 HDR",
-    "lqip": "photos/webp/common room-IMG_0068-HDR-blur.webp"
   },
   "common room-DSC_8961": {
     "webp": {
@@ -290,18 +278,6 @@ export const imageMap = {
     "alt": "Common Room DSC_8961",
     "lqip": "photos/webp/common room-DSC_8961-blur.webp"
   },
-  "common room-DSC_8941": {
-    "webp": {
-      "320": "photos/webp/common room-DSC_8941-320.webp",
-      "640": "photos/webp/common room-DSC_8941-640.webp",
-      "960": "photos/webp/common room-DSC_8941-960.webp",
-      "1280": "photos/webp/common room-DSC_8941-1280.webp",
-      "1600": "photos/webp/common room-DSC_8941-1600.webp"
-    },
-    "fallback": "photos/common room-DSC_8941.jpg",
-    "alt": "Common Room DSC_8941",
-    "lqip": "photos/webp/common room-DSC_8941-blur.webp"
-  },
   "common room-DSC_8954": {
     "webp": {
       "320": "photos/webp/common room-DSC_8954-320.webp",
@@ -314,17 +290,41 @@ export const imageMap = {
     "alt": "Common Room DSC_8954",
     "lqip": "photos/webp/common room-DSC_8954-blur.webp"
   },
-  "kitchen-DSC_8914": {
+  "common room-DSC_8941": {
     "webp": {
-      "320": "photos/webp/kitchen-DSC_8914-320.webp",
-      "640": "photos/webp/kitchen-DSC_8914-640.webp",
-      "960": "photos/webp/kitchen-DSC_8914-960.webp",
-      "1280": "photos/webp/kitchen-DSC_8914-1280.webp",
-      "1600": "photos/webp/kitchen-DSC_8914-1600.webp"
+      "320": "photos/webp/common room-DSC_8941-320.webp",
+      "640": "photos/webp/common room-DSC_8941-640.webp",
+      "960": "photos/webp/common room-DSC_8941-960.webp",
+      "1280": "photos/webp/common room-DSC_8941-1280.webp",
+      "1600": "photos/webp/common room-DSC_8941-1600.webp"
     },
-    "fallback": "photos/kitchen-DSC_8914.jpg",
-    "alt": "Kitchen DSC_8914",
-    "lqip": "photos/webp/kitchen-DSC_8914-blur.webp"
+    "fallback": "photos/common room-DSC_8941.jpg",
+    "alt": "Common Room DSC_8941",
+    "lqip": "photos/webp/common room-DSC_8941-blur.webp"
+  },
+  "common room-IMG_0068-HDR": {
+    "webp": {
+      "320": "photos/webp/common room-IMG_0068-HDR-320.webp",
+      "640": "photos/webp/common room-IMG_0068-HDR-640.webp",
+      "960": "photos/webp/common room-IMG_0068-HDR-960.webp",
+      "1280": "photos/webp/common room-IMG_0068-HDR-1280.webp",
+      "1600": "photos/webp/common room-IMG_0068-HDR-1600.webp"
+    },
+    "fallback": "photos/common room-IMG_0068-HDR.jpg",
+    "alt": "Common Room IMG_0068 HDR",
+    "lqip": "photos/webp/common room-IMG_0068-HDR-blur.webp"
+  },
+  "common room-IMG_0083-HDR": {
+    "webp": {
+      "320": "photos/webp/common room-IMG_0083-HDR-320.webp",
+      "640": "photos/webp/common room-IMG_0083-HDR-640.webp",
+      "960": "photos/webp/common room-IMG_0083-HDR-960.webp",
+      "1280": "photos/webp/common room-IMG_0083-HDR-1280.webp",
+      "1600": "photos/webp/common room-IMG_0083-HDR-1600.webp"
+    },
+    "fallback": "photos/common room-IMG_0083-HDR.jpg",
+    "alt": "Common Room IMG_0083 HDR",
+    "lqip": "photos/webp/common room-IMG_0083-HDR-blur.webp"
   },
   "kitchen-DSC_8902": {
     "webp": {
@@ -337,6 +337,18 @@ export const imageMap = {
     "fallback": "photos/kitchen-DSC_8902.jpg",
     "alt": "Kitchen DSC_8902",
     "lqip": "photos/webp/kitchen-DSC_8902-blur.webp"
+  },
+  "kitchen-DSC_8914": {
+    "webp": {
+      "320": "photos/webp/kitchen-DSC_8914-320.webp",
+      "640": "photos/webp/kitchen-DSC_8914-640.webp",
+      "960": "photos/webp/kitchen-DSC_8914-960.webp",
+      "1280": "photos/webp/kitchen-DSC_8914-1280.webp",
+      "1600": "photos/webp/kitchen-DSC_8914-1600.webp"
+    },
+    "fallback": "photos/kitchen-DSC_8914.jpg",
+    "alt": "Kitchen DSC_8914",
+    "lqip": "photos/webp/kitchen-DSC_8914-blur.webp"
   },
   "kitchen-DSC_8917-HDR": {
     "webp": {
@@ -362,18 +374,6 @@ export const imageMap = {
     "alt": "Kitchen DSC_8923",
     "lqip": "photos/webp/kitchen-DSC_8923-blur.webp"
   },
-  "common room-IMG_0083-HDR": {
-    "webp": {
-      "320": "photos/webp/common room-IMG_0083-HDR-320.webp",
-      "640": "photos/webp/common room-IMG_0083-HDR-640.webp",
-      "960": "photos/webp/common room-IMG_0083-HDR-960.webp",
-      "1280": "photos/webp/common room-IMG_0083-HDR-1280.webp",
-      "1600": "photos/webp/common room-IMG_0083-HDR-1600.webp"
-    },
-    "fallback": "photos/common room-IMG_0083-HDR.jpg",
-    "alt": "Common Room IMG_0083 HDR",
-    "lqip": "photos/webp/common room-IMG_0083-HDR-blur.webp"
-  },
   "kitchen-DSC_8930-HDR": {
     "webp": {
       "320": "photos/webp/kitchen-DSC_8930-HDR-320.webp",
@@ -397,6 +397,18 @@ export const imageMap = {
     "fallback": "photos/kitchen-DSC_8933-HDR.jpg",
     "alt": "Kitchen DSC_8933 HDR",
     "lqip": "photos/webp/kitchen-DSC_8933-HDR-blur.webp"
+  },
+  "kitchen-IMG_0048-HDR": {
+    "webp": {
+      "320": "photos/webp/kitchen-IMG_0048-HDR-320.webp",
+      "640": "photos/webp/kitchen-IMG_0048-HDR-640.webp",
+      "960": "photos/webp/kitchen-IMG_0048-HDR-960.webp",
+      "1280": "photos/webp/kitchen-IMG_0048-HDR-1280.webp",
+      "1600": "photos/webp/kitchen-IMG_0048-HDR-1600.webp"
+    },
+    "fallback": "photos/kitchen-IMG_0048-HDR.jpg",
+    "alt": "Kitchen IMG_0048 HDR",
+    "lqip": "photos/webp/kitchen-IMG_0048-HDR-blur.webp"
   },
   "kitchen-IMG_0061": {
     "webp": {
@@ -422,17 +434,17 @@ export const imageMap = {
     "alt": "Kitchen IMG_0062",
     "lqip": "photos/webp/kitchen-IMG_0062-blur.webp"
   },
-  "kitchen-IMG_0048-HDR": {
+  "kitchen-IMG_0064": {
     "webp": {
-      "320": "photos/webp/kitchen-IMG_0048-HDR-320.webp",
-      "640": "photos/webp/kitchen-IMG_0048-HDR-640.webp",
-      "960": "photos/webp/kitchen-IMG_0048-HDR-960.webp",
-      "1280": "photos/webp/kitchen-IMG_0048-HDR-1280.webp",
-      "1600": "photos/webp/kitchen-IMG_0048-HDR-1600.webp"
+      "320": "photos/webp/kitchen-IMG_0064-320.webp",
+      "640": "photos/webp/kitchen-IMG_0064-640.webp",
+      "960": "photos/webp/kitchen-IMG_0064-960.webp",
+      "1280": "photos/webp/kitchen-IMG_0064-1280.webp",
+      "1600": "photos/webp/kitchen-IMG_0064-1600.webp"
     },
-    "fallback": "photos/kitchen-IMG_0048-HDR.jpg",
-    "alt": "Kitchen IMG_0048 HDR",
-    "lqip": "photos/webp/kitchen-IMG_0048-HDR-blur.webp"
+    "fallback": "photos/kitchen-IMG_0064.jpg",
+    "alt": "Kitchen IMG_0064",
+    "lqip": "photos/webp/kitchen-IMG_0064-blur.webp"
   },
   "kitchen-IMG_0066": {
     "webp": {
@@ -446,17 +458,17 @@ export const imageMap = {
     "alt": "Kitchen IMG_0066",
     "lqip": "photos/webp/kitchen-IMG_0066-blur.webp"
   },
-  "kitchen-IMG_0064": {
+  "outside-DSC_8970": {
     "webp": {
-      "320": "photos/webp/kitchen-IMG_0064-320.webp",
-      "640": "photos/webp/kitchen-IMG_0064-640.webp",
-      "960": "photos/webp/kitchen-IMG_0064-960.webp",
-      "1280": "photos/webp/kitchen-IMG_0064-1280.webp",
-      "1600": "photos/webp/kitchen-IMG_0064-1600.webp"
+      "320": "photos/webp/outside-DSC_8970-320.webp",
+      "640": "photos/webp/outside-DSC_8970-640.webp",
+      "960": "photos/webp/outside-DSC_8970-960.webp",
+      "1280": "photos/webp/outside-DSC_8970-1280.webp",
+      "1600": "photos/webp/outside-DSC_8970-1600.webp"
     },
-    "fallback": "photos/kitchen-IMG_0064.jpg",
-    "alt": "Kitchen IMG_0064",
-    "lqip": "photos/webp/kitchen-IMG_0064-blur.webp"
+    "fallback": "photos/outside-DSC_8970.jpg",
+    "alt": "Outside DSC_8970",
+    "lqip": "photos/webp/outside-DSC_8970-blur.webp"
   },
   "outside-DSC_8972": {
     "webp": {
@@ -482,30 +494,6 @@ export const imageMap = {
     "alt": "Outside DSC_8974",
     "lqip": "photos/webp/outside-DSC_8974-blur.webp"
   },
-  "outside-DSC_8970": {
-    "webp": {
-      "320": "photos/webp/outside-DSC_8970-320.webp",
-      "640": "photos/webp/outside-DSC_8970-640.webp",
-      "960": "photos/webp/outside-DSC_8970-960.webp",
-      "1280": "photos/webp/outside-DSC_8970-1280.webp",
-      "1600": "photos/webp/outside-DSC_8970-1600.webp"
-    },
-    "fallback": "photos/outside-DSC_8970.jpg",
-    "alt": "Outside DSC_8970",
-    "lqip": "photos/webp/outside-DSC_8970-blur.webp"
-  },
-  "outside-DSC_8985": {
-    "webp": {
-      "320": "photos/webp/outside-DSC_8985-320.webp",
-      "640": "photos/webp/outside-DSC_8985-640.webp",
-      "960": "photos/webp/outside-DSC_8985-960.webp",
-      "1280": "photos/webp/outside-DSC_8985-1280.webp",
-      "1600": "photos/webp/outside-DSC_8985-1600.webp"
-    },
-    "fallback": "photos/outside-DSC_8985.jpg",
-    "alt": "Outside DSC_8985",
-    "lqip": "photos/webp/outside-DSC_8985-blur.webp"
-  },
   "outside-DSC_8978": {
     "webp": {
       "320": "photos/webp/outside-DSC_8978-320.webp",
@@ -529,6 +517,18 @@ export const imageMap = {
     "fallback": "photos/outside-DSC_8981.jpg",
     "alt": "Outside DSC_8981",
     "lqip": "photos/webp/outside-DSC_8981-blur.webp"
+  },
+  "outside-DSC_8985": {
+    "webp": {
+      "320": "photos/webp/outside-DSC_8985-320.webp",
+      "640": "photos/webp/outside-DSC_8985-640.webp",
+      "960": "photos/webp/outside-DSC_8985-960.webp",
+      "1280": "photos/webp/outside-DSC_8985-1280.webp",
+      "1600": "photos/webp/outside-DSC_8985-1600.webp"
+    },
+    "fallback": "photos/outside-DSC_8985.jpg",
+    "alt": "Outside DSC_8985",
+    "lqip": "photos/webp/outside-DSC_8985-blur.webp"
   },
   "outside-IMG_0117": {
     "webp": {
@@ -566,30 +566,6 @@ export const imageMap = {
     "alt": "Stairs IMG_9969",
     "lqip": "photos/webp/stairs-IMG_9969-blur.webp"
   },
-  "terrace-DSC_8898": {
-    "webp": {
-      "320": "photos/webp/terrace-DSC_8898-320.webp",
-      "640": "photos/webp/terrace-DSC_8898-640.webp",
-      "960": "photos/webp/terrace-DSC_8898-960.webp",
-      "1280": "photos/webp/terrace-DSC_8898-1280.webp",
-      "1600": "photos/webp/terrace-DSC_8898-1600.webp"
-    },
-    "fallback": "photos/terrace-DSC_8898.jpg",
-    "alt": "Terrace DSC_8898",
-    "lqip": "photos/webp/terrace-DSC_8898-blur.webp"
-  },
-  "terrace-DSC_8967": {
-    "webp": {
-      "320": "photos/webp/terrace-DSC_8967-320.webp",
-      "640": "photos/webp/terrace-DSC_8967-640.webp",
-      "960": "photos/webp/terrace-DSC_8967-960.webp",
-      "1280": "photos/webp/terrace-DSC_8967-1280.webp",
-      "1600": "photos/webp/terrace-DSC_8967-1600.webp"
-    },
-    "fallback": "photos/terrace-DSC_8967.jpg",
-    "alt": "Terrace DSC_8967",
-    "lqip": "photos/webp/terrace-DSC_8967-blur.webp"
-  },
   "terrace-DSC_8897": {
     "webp": {
       "320": "photos/webp/terrace-DSC_8897-320.webp",
@@ -601,6 +577,18 @@ export const imageMap = {
     "fallback": "photos/terrace-DSC_8897.jpg",
     "alt": "Terrace DSC_8897",
     "lqip": "photos/webp/terrace-DSC_8897-blur.webp"
+  },
+  "terrace-DSC_8898": {
+    "webp": {
+      "320": "photos/webp/terrace-DSC_8898-320.webp",
+      "640": "photos/webp/terrace-DSC_8898-640.webp",
+      "960": "photos/webp/terrace-DSC_8898-960.webp",
+      "1280": "photos/webp/terrace-DSC_8898-1280.webp",
+      "1600": "photos/webp/terrace-DSC_8898-1600.webp"
+    },
+    "fallback": "photos/terrace-DSC_8898.jpg",
+    "alt": "Terrace DSC_8898",
+    "lqip": "photos/webp/terrace-DSC_8898-blur.webp"
   },
   "terrace-DSC_8899": {
     "webp": {
@@ -614,6 +602,18 @@ export const imageMap = {
     "alt": "Terrace DSC_8899",
     "lqip": "photos/webp/terrace-DSC_8899-blur.webp"
   },
+  "terrace-DSC_8967": {
+    "webp": {
+      "320": "photos/webp/terrace-DSC_8967-320.webp",
+      "640": "photos/webp/terrace-DSC_8967-640.webp",
+      "960": "photos/webp/terrace-DSC_8967-960.webp",
+      "1280": "photos/webp/terrace-DSC_8967-1280.webp",
+      "1600": "photos/webp/terrace-DSC_8967-1600.webp"
+    },
+    "fallback": "photos/terrace-DSC_8967.jpg",
+    "alt": "Terrace DSC_8967",
+    "lqip": "photos/webp/terrace-DSC_8967-blur.webp"
+  },
   "terrace-DSC_8968": {
     "webp": {
       "320": "photos/webp/terrace-DSC_8968-320.webp",
@@ -626,17 +626,17 @@ export const imageMap = {
     "alt": "Terrace DSC_8968",
     "lqip": "photos/webp/terrace-DSC_8968-blur.webp"
   },
-  "terrace-IMG_0106": {
+  "terrace-DSC_8969": {
     "webp": {
-      "320": "photos/webp/terrace-IMG_0106-320.webp",
-      "640": "photos/webp/terrace-IMG_0106-640.webp",
-      "960": "photos/webp/terrace-IMG_0106-960.webp",
-      "1280": "photos/webp/terrace-IMG_0106-1280.webp",
-      "1600": "photos/webp/terrace-IMG_0106-1600.webp"
+      "320": "photos/webp/terrace-DSC_8969-320.webp",
+      "640": "photos/webp/terrace-DSC_8969-640.webp",
+      "960": "photos/webp/terrace-DSC_8969-960.webp",
+      "1280": "photos/webp/terrace-DSC_8969-1280.webp",
+      "1600": "photos/webp/terrace-DSC_8969-1600.webp"
     },
-    "fallback": "photos/terrace-IMG_0106.jpg",
-    "alt": "Terrace IMG_0106",
-    "lqip": "photos/webp/terrace-IMG_0106-blur.webp"
+    "fallback": "photos/terrace-DSC_8969.jpg",
+    "alt": "Terrace DSC_8969",
+    "lqip": "photos/webp/terrace-DSC_8969-blur.webp"
   },
   "terrace-IMG_0030": {
     "webp": {
@@ -662,17 +662,17 @@ export const imageMap = {
     "alt": "Terrace IMG_0104",
     "lqip": "photos/webp/terrace-IMG_0104-blur.webp"
   },
-  "terrace-DSC_8969": {
+  "terrace-IMG_0106": {
     "webp": {
-      "320": "photos/webp/terrace-DSC_8969-320.webp",
-      "640": "photos/webp/terrace-DSC_8969-640.webp",
-      "960": "photos/webp/terrace-DSC_8969-960.webp",
-      "1280": "photos/webp/terrace-DSC_8969-1280.webp",
-      "1600": "photos/webp/terrace-DSC_8969-1600.webp"
+      "320": "photos/webp/terrace-IMG_0106-320.webp",
+      "640": "photos/webp/terrace-IMG_0106-640.webp",
+      "960": "photos/webp/terrace-IMG_0106-960.webp",
+      "1280": "photos/webp/terrace-IMG_0106-1280.webp",
+      "1600": "photos/webp/terrace-IMG_0106-1600.webp"
     },
-    "fallback": "photos/terrace-DSC_8969.jpg",
-    "alt": "Terrace DSC_8969",
-    "lqip": "photos/webp/terrace-DSC_8969-blur.webp"
+    "fallback": "photos/terrace-IMG_0106.jpg",
+    "alt": "Terrace IMG_0106",
+    "lqip": "photos/webp/terrace-IMG_0106-blur.webp"
   },
   "terrace-IMG_0113": {
     "webp": {
