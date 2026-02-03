@@ -262,6 +262,148 @@ export class GoogleSheetsService {
     }
   }
 
+    // Returns summed and average nightly prices for each room type within a date range
+    async getRoomPricesForDateRange(startDate: string, endDate: string): Promise<{
+      [roomType: string]: { total: number; average: number; days: number };
+    }> {
+      try {
+        const response = await this.sheets.spreadsheets.values.get({
+          spreadsheetId: SHEET_ID,
+          range: 'A:Z', // entire table with dates in column A
+        });
+
+        const rows = response.data.values;
+        if (!rows || rows.length === 0) return {};
+
+        const headerRow = rows[0];
+
+        // Map header columns to canonical sheet room names
+        const mapping: { [sheetName: string]: number } = {};
+        headerRow.forEach((h: string, idx: number) => {
+          if (!h) return;
+          const txt = h.toString().toLowerCase();
+          if (txt.includes('single')) mapping['2x Single Bed Bedroom'] = idx;
+          if (txt.includes('double')) mapping['Double Bed Bedroom'] = idx;
+          if (txt.includes('bunk')) mapping['Bunk Bed Bedroom'] = idx;
+          if (txt.includes('whole')) mapping['Whole House'] = idx;
+        });
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        const accum: { [sheetName: string]: { total: number; days: number } } = {};
+        Object.keys(mapping).forEach((k) => (accum[k] = { total: 0, days: 0 }));
+
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          const dateCell = row[0];
+          if (!dateCell) continue;
+
+          let rowDate: Date;
+          try {
+            rowDate = new Date(dateCell);
+            if (isNaN(rowDate.getTime())) {
+              const parts = dateCell.toString().split('/');
+              if (parts.length === 3) {
+                rowDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+              } else {
+                continue;
+              }
+            }
+          } catch (e) {
+            continue;
+          }
+
+          if (rowDate < start || rowDate >= end) continue;
+
+          // For each mapped room column, add price if present
+          for (const [sheetName, col] of Object.entries(mapping)) {
+            const cell = row[col];
+            if (!cell) continue;
+            const price = parseFloat(cell.toString().replace(/[^\d.-]/g, ''));
+            if (isNaN(price)) continue;
+            accum[sheetName].total += price;
+            accum[sheetName].days += 1;
+          }
+        }
+
+        const result: { [roomType: string]: { total: number; average: number; days: number } } = {};
+        Object.entries(accum).forEach(([k, v]) => {
+          if (v.days > 0) result[k] = { total: v.total, average: v.total / v.days, days: v.days };
+        });
+
+        console.log('Loaded room prices for date range:', result);
+        return result;
+      } catch (error) {
+        console.error('Error reading room prices for date range:', error);
+        return {};
+      }
+    }
+
+    // Return per-night prices for a specific room sheet column between startDate (inclusive)
+    // and endDate (exclusive). Returns array of { date: 'YYYY-MM-DD', price: number | null }
+    async getPerNightPricesForRoom(sheetRoomName: string, startDate: string, endDate: string): Promise<Array<{ date: string; price: number | null }>> {
+      try {
+        const response = await this.sheets.spreadsheets.values.get({
+          spreadsheetId: SHEET_ID,
+          range: 'A:Z',
+        });
+
+        const rows = response.data.values;
+        if (!rows || rows.length === 0) return [];
+
+        const headerRow = rows[0];
+        const colIndex = headerRow.findIndex((h: string) => h && h.toString().trim() === sheetRoomName);
+        if (colIndex === -1) return [];
+
+        // Build a map date -> price for quick lookup
+        const datePriceMap: { [date: string]: number } = {};
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          const dateCell = row[0];
+          if (!dateCell) continue;
+          let formattedDate: string;
+          try {
+            const d = new Date(dateCell);
+            if (isNaN(d.getTime())) {
+              const parts = dateCell.toString().split('/');
+              if (parts.length === 3) {
+                const day = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1;
+                const year = parseInt(parts[2], 10);
+                const parsed = new Date(year, month, day);
+                formattedDate = parsed.toISOString().split('T')[0];
+              } else {
+                continue;
+              }
+            } else {
+              formattedDate = d.toISOString().split('T')[0];
+            }
+          } catch (e) {
+            continue;
+          }
+
+          const cell = row[colIndex];
+          if (!cell) continue;
+          const price = parseFloat(cell.toString().replace(/[^\d.-]/g, ''));
+          if (!isNaN(price)) datePriceMap[formattedDate] = price;
+        }
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const results: Array<{ date: string; price: number | null }> = [];
+        for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+          const iso = new Date(d).toISOString().split('T')[0];
+          results.push({ date: iso, price: datePriceMap[iso] ?? null });
+        }
+
+        return results;
+      } catch (error) {
+        console.error('Error reading per-night prices for room from Google Sheets:', error);
+        return [];
+      }
+    }
+
   async getExtraGuestFeeForDateRange(startDate: string, endDate: string): Promise<number> {
     try {
       const response = await this.sheets.spreadsheets.values.get({

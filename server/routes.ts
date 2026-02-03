@@ -114,9 +114,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Return nightly rates for all room types (sheet-derived)
   app.get("/api/rates", async (req, res) => {
     try {
-      const sheetPrices = await googleSheetsService.getRoomNightlyPrices();
+      // Optionally accept date range to compute average nightly rate for that range
+      const { checkIn, checkOut } = req.query;
+      let sheetResult: any = {};
 
-      // Map sheet room names back to API room ids
+      if (checkIn && checkOut) {
+        sheetResult = await googleSheetsService.getRoomPricesForDateRange(checkIn as string, checkOut as string);
+      } else {
+        sheetResult = await googleSheetsService.getRoomNightlyPrices();
+      }
+
+      // Map sheet room names back to API room ids and normalize output
       const sheetToApi: { [sheetName: string]: string } = {
         '2x Single Bed Bedroom': 'single-bed',
         'Double Bed Bedroom': 'double-bed',
@@ -124,10 +132,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Whole House': 'whole-house'
       };
 
-      const rates: { [roomId: string]: number } = {};
-      Object.entries(sheetPrices).forEach(([sheetName, price]) => {
+      const rates: { [roomId: string]: any } = {};
+      Object.entries(sheetResult).forEach(([sheetName, val]) => {
         const id = sheetToApi[sheetName];
-        if (id) rates[id] = price;
+        if (!id) return;
+        if (typeof val === 'number') {
+          rates[id] = { pricePerNight: val };
+        } else if (val && typeof val === 'object') {
+          rates[id] = { pricePerNight: val.average ?? null, total: val.total ?? null, days: val.days ?? null };
+        }
       });
 
       res.json(rates);

@@ -41,11 +41,34 @@ export async function computePrice(req: PriceRequest): Promise<PriceBreakdown> {
   const end = new Date(checkOut);
   const nights = Math.max(0, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
 
-  // Fetch room nightly prices from Google Sheets
-  const sheetPrices = await googleSheetsService.getRoomNightlyPrices();
+  // Fetch per-night prices for the room between the dates (each row in sheet corresponds to a date)
   const sheetRoomName = ROOM_TYPE_MAP[roomType];
-  const pricePerNight = sheetPrices[sheetRoomName] ?? DEFAULT_ROOM_PRICING[roomType] ?? DEFAULT_ROOM_PRICING["whole-house"];
-  const roomCost = nights * pricePerNight;
+  const perNight = await googleSheetsService.getPerNightPricesForRoom(sheetRoomName, checkIn, checkOut);
+
+  let roomCost = 0;
+  let foundAny = false;
+  const perNightPrices: Array<number | null> = [];
+  for (const p of perNight) {
+    if (p.price === null || p.price === undefined) {
+      perNightPrices.push(null);
+    } else {
+      perNightPrices.push(p.price);
+      roomCost += p.price;
+      foundAny = true;
+    }
+  }
+
+  let pricePerNight: number;
+  if (foundAny) {
+    // Use the first available night's price to populate pricePerNight for UI display
+    const first = perNightPrices.find((v) => v !== null) as number | undefined;
+    pricePerNight = first ?? (DEFAULT_ROOM_PRICING[roomType] ?? DEFAULT_ROOM_PRICING['whole-house']);
+  } else {
+    // fallback: try sheet-wide single value or default
+    const sheetPrices = await googleSheetsService.getRoomNightlyPrices();
+    pricePerNight = sheetPrices[sheetRoomName] ?? DEFAULT_ROOM_PRICING[roomType] ?? DEFAULT_ROOM_PRICING["whole-house"];
+    roomCost = nights * pricePerNight;
+  }
 
   const wholeHouseCleaningFee = await googleSheetsService.getWholeHouseCleaningFee();
   const roomCleaningFee = await googleSheetsService.getRoomCleaningFee();
