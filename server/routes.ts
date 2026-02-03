@@ -111,6 +111,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Return nightly rates for all room types (sheet-derived)
+  app.get("/api/rates", async (req, res) => {
+    try {
+      const sheetPrices = await googleSheetsService.getRoomNightlyPrices();
+
+      // Map sheet room names back to API room ids
+      const sheetToApi: { [sheetName: string]: string } = {
+        '2x Single Bed Bedroom': 'single-bed',
+        'Double Bed Bedroom': 'double-bed',
+        'Bunk Bed Bedroom': 'bunk-bed',
+        'Whole House': 'whole-house'
+      };
+
+      const rates: { [roomId: string]: number } = {};
+      Object.entries(sheetPrices).forEach(([sheetName, price]) => {
+        const id = sheetToApi[sheetName];
+        if (id) rates[id] = price;
+      });
+
+      res.json(rates);
+    } catch (error) {
+      console.error('Error fetching rates from Google Sheets:', error);
+      res.status(500).json({ message: 'Failed to fetch rates' });
+    }
+  });
+
   // Get availability for specific room type
   app.get("/api/availability/:roomType", async (req, res) => {
     try {

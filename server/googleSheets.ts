@@ -196,37 +196,66 @@ export class GoogleSheetsService {
         return {};
       }
 
+      // Log the actual header and first 3 data rows for debugging
+      console.log('SHEET HEADER:', JSON.stringify(rows[0]));
+      for (let i = 1; i < Math.min(rows.length, 4); i++) {
+        console.log(`SHEET ROW ${i}:`, JSON.stringify(rows[i]));
+      }
+
       const headerRow = rows[0];
       const roomTypes = ['2x Single Bed Bedroom', 'Double Bed Bedroom', 'Bunk Bed Bedroom', 'Whole House'];
       const prices: { [roomType: string]: number } = {};
 
-      // Find the pricing row (typically row 2, after headers)
-      for (let i = 1; i < Math.min(rows.length, 3); i++) {
-        const row = rows[i];
-        let foundPrices = false;
 
-        // Check each room type column for pricing
+
+
+        // Determine column indices for room types
+        const columnIndices: { [roomType: string]: number } = {};
         roomTypes.forEach((roomType) => {
-          const columnIndex = headerRow.findIndex((header: string) => header.trim() === roomType);
-          if (columnIndex !== -1 && row[columnIndex]) {
-            const priceValue = row[columnIndex].toString().trim();
+          const idx = headerRow.findIndex((header: string) => header && header.toString().trim() === roomType);
+          if (idx !== -1) columnIndices[roomType] = idx;
+        });
+
+        // Scan the first several data rows for numeric pricing values in each room column
+        const maxRowsToScan = Math.min(rows.length, 11); // header + up to 10 rows
+        for (const roomType of roomTypes) {
+          const col = columnIndices[roomType];
+          if (col === undefined) continue;
+
+          for (let r = 1; r < maxRowsToScan; r++) {
+            const row = rows[r] || [];
+            const cell = row[col];
+            if (!cell) continue;
+            const priceValue = cell.toString().trim();
             const price = parseFloat(priceValue.replace(/[^\d.-]/g, ''));
             if (!isNaN(price) && price > 0) {
               prices[roomType] = price;
-              foundPrices = true;
+              break;
             }
           }
-        });
 
-        // If we found prices in this row, return them
-        if (foundPrices) {
+          // If not found in rows, try parsing header text for a trailing price (e.g., "Room Name €80")
+          if (prices[roomType] === undefined) {
+            const headerCell = headerRow[col];
+            if (headerCell) {
+              const headerText = headerCell.toString();
+              const m = headerText.match(/([\d,.]+)\s*€|€\s*([\d,.]+)/);
+              if (m) {
+                const numeric = (m[1] || m[2] || '').replace(/,/g, '.');
+                const parsed = parseFloat(numeric.replace(/[^\d.-]/g, ''));
+                if (!isNaN(parsed) && parsed > 0) prices[roomType] = parsed;
+              }
+            }
+          }
+        }
+
+        if (Object.keys(prices).length > 0) {
           console.log(`Loaded room nightly prices from Google Sheets:`, prices);
           return prices;
         }
-      }
 
-      console.log('No pricing row found in Google Sheets, using defaults');
-      return {};
+        console.log('No pricing row found in Google Sheets, using defaults');
+        return {};
     } catch (error) {
       console.error('Error reading room nightly prices from Google Sheets:', error);
       return {};
