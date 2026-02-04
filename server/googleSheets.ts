@@ -346,44 +346,44 @@ export class GoogleSheetsService {
       try {
         const response = await this.sheets.spreadsheets.values.get({
           spreadsheetId: SHEET_ID,
-          range: 'A:Z',
-        });
+        range: 'A:L', // columns A (dates) through L (last pricing column)
+      });
 
-        const rows = response.data.values;
-        if (!rows || rows.length === 0) return [];
+      const rows = response.data.values;
+      if (!rows || rows.length === 0) return [];
 
-        const headerRow = rows[0];
-        const colIndex = headerRow.findIndex((h: string) => h && h.toString().trim() === sheetRoomName);
-        if (colIndex === -1) return [];
+      const headerRow = rows[0];
+      
+      // Map sheet room names to column indices (columns I-L: indices 8-11)
+      const roomToColIndex: { [sheetName: string]: number } = {
+        '2x Single Bed Bedroom': 8,      // Column I
+        'Double Bed Bedroom': 9,         // Column J
+        'Bunk Bed Bedroom': 10,          // Column K
+        'Whole House': 11,               // Column L (note: user said "Whole House Fix Pricing")
+      };
 
-        // Build a map date -> price for quick lookup
-        const datePriceMap: { [date: string]: number } = {};
-        for (let i = 1; i < rows.length; i++) {
-          const row = rows[i];
-          const dateCell = row[0];
-          if (!dateCell) continue;
-          let formattedDate: string;
-          try {
-            const d = new Date(dateCell);
-            if (isNaN(d.getTime())) {
-              const parts = dateCell.toString().split('/');
-              if (parts.length === 3) {
-                const day = parseInt(parts[0], 10);
-                const month = parseInt(parts[1], 10) - 1;
-                const year = parseInt(parts[2], 10);
-                const parsed = new Date(year, month, day);
-                formattedDate = parsed.toISOString().split('T')[0];
-              } else {
-                continue;
-              }
-            } else {
-              formattedDate = d.toISOString().split('T')[0];
-            }
-          } catch (e) {
+      const colIndex = roomToColIndex[sheetRoomName];
+      if (colIndex === undefined) return [];
+
+      // Build a map date -> price for quick lookup
+      const datePriceMap: { [date: string]: number } = {};
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const dateCell = row[0];
+        if (!dateCell) continue;
+        
+        let formattedDate: string;
+        try {
+          // Parse MM/DD/YYYY format
+          const parts = dateCell.toString().split('/');
+          if (parts.length === 3) {
+            const mm = parseInt(parts[0], 10);
+            const dd = parseInt(parts[1], 10);
+            const yyyy = parseInt(parts[2], 10);
+            const parsed = new Date(yyyy, mm - 1, dd);
+            formattedDate = parsed.toISOString().split('T')[0];
+          } else {
             continue;
-          }
-
-          const cell = row[colIndex];
           if (!cell) continue;
           const price = parseFloat(cell.toString().replace(/[^\d.-]/g, ''));
           if (!isNaN(price)) datePriceMap[formattedDate] = price;
