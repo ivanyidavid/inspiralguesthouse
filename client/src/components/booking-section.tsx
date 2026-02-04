@@ -114,11 +114,14 @@ export default function BookingSection() {
     pricePerNight?: number;
   } | null>(null);
 
-  // Fetch live price when inputs change
+  // Fetch live price when inputs change — poll every 5s while dates selected
   useEffect(() => {
+    let mounted = true;
+    let intervalId: number | undefined;
+
     const fetchPrice = async () => {
       if (!checkInDate || !checkOutDate) {
-        setServerPrice(null);
+        if (mounted) setServerPrice(null);
         return;
       }
 
@@ -129,26 +132,40 @@ export default function BookingSection() {
           `/api/price?roomType=${encodeURIComponent(selectedRoom)}&checkIn=${start}&checkOut=${end}&guests=${guests}`
         );
         if (!resp.ok) {
-          setServerPrice(null);
+          if (mounted) setServerPrice(null);
           return;
         }
         const data = await resp.json();
-        setServerPrice(data);
+        if (mounted) setServerPrice(data);
       } catch (e) {
-        setServerPrice(null);
+        if (mounted) setServerPrice(null);
       }
     };
 
+    // initial fetch
     fetchPrice();
+
+    // start polling every 5s
+    if (checkInDate && checkOutDate) {
+      intervalId = window.setInterval(fetchPrice, 5000);
+    }
+
+    return () => {
+      mounted = false;
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [checkInDate, checkOutDate, selectedRoom, guests]);
 
   // Fetch prices for all room types when dates change so cards can show live per-night rates
   const [priceMap, setPriceMap] = useState<Record<string, { pricePerNight: number; nights: number; total: number } | null>>({});
 
   useEffect(() => {
+    let mounted = true;
+    let intervalId: number | undefined;
+
     const fetchAll = async () => {
       if (!checkInDate || !checkOutDate) {
-        setPriceMap({});
+        if (mounted) setPriceMap({});
         return;
       }
 
@@ -170,10 +187,21 @@ export default function BookingSection() {
         })
       );
 
-      setPriceMap(Object.fromEntries(entries));
+      if (mounted) setPriceMap(Object.fromEntries(entries));
     };
 
+    // initial fetch
     fetchAll();
+
+    // poll every 5s while dates selected
+    if (checkInDate && checkOutDate) {
+      intervalId = window.setInterval(fetchAll, 5000);
+    }
+
+    return () => {
+      mounted = false;
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [checkInDate, checkOutDate, guests]);
 
   // Get unavailable dates from existing bookings for selected room type
