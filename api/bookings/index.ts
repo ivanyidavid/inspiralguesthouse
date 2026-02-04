@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { handleCors } from '../lib/cors';
 import { getBookings, createBooking, getBookingsByDateRange, type InsertBooking } from '../lib/storage';
-import { getBlockedDatesForRoom } from '../lib/googleSheets';
+// Google Sheets availability removed
 import { sendBookingNotification } from '../lib/email';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -38,37 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
       }
       
-      try {
-        const roomTypeMap: { [key: string]: string } = {
-          "single-bed": "2x Single Bed Bedroom",
-          "double-bed": "Double Bed Bedroom", 
-          "bunk-bed": "Bunk Bed Bedroom",
-          "whole-house": "Whole House"
-        };
-        
-        const sheetRoomType = roomTypeMap[data.roomType];
-        if (sheetRoomType) {
-          const blockedDates = await getBlockedDatesForRoom(sheetRoomType);
-          
-          const checkInDate = new Date(data.checkIn);
-          const checkOutDate = new Date(data.checkOut);
-          
-          const requestedDates = [];
-          for (let date = new Date(checkInDate); date < checkOutDate; date.setDate(date.getDate() + 1)) {
-            requestedDates.push(date.toISOString().split('T')[0]);
-          }
-          
-          const hasBlockedDate = requestedDates.some(date => blockedDates.includes(date));
-          
-          if (hasBlockedDate) {
-            return res.status(409).json({ 
-              message: 'The selected dates are blocked for this room type. Please choose different dates.' 
-            });
-          }
-        }
-      } catch (error) {
-        console.error('Error checking Google Sheets availability:', error);
-      }
+      // Google Sheets availability checks removed
       
       const checkInDate = new Date(data.checkIn);
       const checkOutDate = new Date(data.checkOut);

@@ -38,56 +38,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get availability from Google Sheets
-  app.get("/api/availability", async (req, res) => {
-    try {
-      const availability = await googleSheetsService.getBlockedDatesForAllRooms();
-      res.json(availability);
-    } catch (error) {
-      console.error('Error fetching availability:', error);
-      res.status(500).json({ message: "Failed to fetch availability from Google Sheets" });
-    }
-  });
-
-  // Get cleaning fees from Google Sheets cells N2 and O2
-  app.get("/api/cleaning-fee", async (req, res) => {
-    try {
-      const [wholeHouseCleaningFee, roomCleaningFee] = await Promise.all([
-        googleSheetsService.getWholeHouseCleaningFee(),
-        googleSheetsService.getRoomCleaningFee()
-      ]);
-      res.json({ 
-        wholeHouseCleaningFee,
-        roomCleaningFee 
-      });
-    } catch (error) {
-      console.error("Error fetching cleaning fees:", error);
-      res.status(500).json({ message: "Failed to fetch cleaning fees" });
-    }
-  });
-
-  // Get extra guest fee for specific date range from column M
-  app.get("/api/extra-guest-fee", async (req, res) => {
-    try {
-      const { startDate, endDate } = req.query;
-      
-      if (!startDate || !endDate) {
-        res.status(400).json({ message: "Start date and end date are required" });
-        return;
-      }
-      
-      const extraGuestFee = await googleSheetsService.getExtraGuestFeeForDateRange(
-        startDate as string,
-        endDate as string
-      );
-      res.json({ extraGuestFee });
-    } catch (error) {
-      console.error("Error fetching extra guest fee:", error);
-      res.status(500).json({ message: "Failed to fetch extra guest fee" });
-    }
-  });
-
-  // Compute pricing for a requested booking (returns breakdown)
+  // Compute pricing for a booking
   app.get("/api/price", async (req, res) => {
     try {
       const { roomType, checkIn, checkOut, guests } = req.query;
@@ -110,58 +61,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Failed to compute price' });
     }
   });
-
-  // Return nightly rates for all room types (sheet-derived)
-  app.get("/api/rates", async (req, res) => {
-    try {
-      // Optionally accept date range to compute average nightly rate for that range
-      const { checkIn, checkOut } = req.query;
-      let sheetResult: any = {};
-
-      if (checkIn && checkOut) {
-        sheetResult = await googleSheetsService.getRoomPricesForDateRange(checkIn as string, checkOut as string);
-      } else {
-        sheetResult = await googleSheetsService.getRoomNightlyPrices();
-      }
-
-      // Map sheet room names back to API room ids and normalize output
-      const sheetToApi: { [sheetName: string]: string } = {
-        '2x Single Bed Bedroom': 'single-bed',
-        'Double Bed Bedroom': 'double-bed',
-        'Bunk Bed Bedroom': 'bunk-bed',
-        'Whole House': 'whole-house'
-      };
-
-      const rates: { [roomId: string]: any } = {};
-      Object.entries(sheetResult).forEach(([sheetName, val]) => {
-        const id = sheetToApi[sheetName];
-        if (!id) return;
-        if (typeof val === 'number') {
-          rates[id] = { pricePerNight: val };
-        } else if (val && typeof val === 'object') {
-          rates[id] = { pricePerNight: val.average ?? null, total: val.total ?? null, days: val.days ?? null };
-        }
-      });
-
-      res.json(rates);
-    } catch (error) {
-      console.error('Error fetching rates from Google Sheets:', error);
-      res.status(500).json({ message: 'Failed to fetch rates' });
-    }
-  });
-
-  // Get availability for specific room type
-  app.get("/api/availability/:roomType", async (req, res) => {
-    try {
-      const { roomType } = req.params;
-      const blockedDates = await googleSheetsService.getBlockedDatesForRoom(decodeURIComponent(roomType));
-      res.json({ roomType, blockedDates });
-    } catch (error) {
-      console.error('Error fetching room availability:', error);
-      res.status(500).json({ message: "Failed to fetch room availability" });
-    }
-  });
-
   // Create a new booking
   app.post("/api/bookings", async (req, res) => {
     try {
@@ -187,41 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return;
       }
       
-      // Check Google Sheets for blocked dates
-      try {
-        const roomTypeMap: { [key: string]: string } = {
-          "single-bed": "2x Single Bed Bedroom",
-          "double-bed": "Double Bed Bedroom", 
-          "bunk-bed": "Bunk Bed Bedroom",
-          "whole-house": "Whole House"
-        };
-        
-        const sheetRoomType = roomTypeMap[validatedData.roomType];
-        if (sheetRoomType) {
-          const blockedDates = await googleSheetsService.getBlockedDatesForRoom(sheetRoomType);
-          
-          // Check if any requested dates are blocked
-          const checkInDate = new Date(validatedData.checkIn);
-          const checkOutDate = new Date(validatedData.checkOut);
-          
-          const requestedDates = [];
-          for (let date = new Date(checkInDate); date < checkOutDate; date.setDate(date.getDate() + 1)) {
-            requestedDates.push(date.toISOString().split('T')[0]);
-          }
-          
-          const hasBlockedDate = requestedDates.some(date => blockedDates.includes(date));
-          
-          if (hasBlockedDate) {
-            res.status(409).json({ 
-              message: "The selected dates are blocked for this room type. Please choose different dates." 
-            });
-            return;
-          }
-        }
-      } catch (error) {
-        console.error('Error checking Google Sheets availability:', error);
-        // Continue with booking if Google Sheets check fails
-      }
+      // Google Sheets availability checks removed.
       
       // Validate check-in is before check-out
       const checkInDate = new Date(validatedData.checkIn);
@@ -253,10 +118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           checkOut: validatedData.checkOut,
           guests: validatedData.guests,
         });
-
-        // store total in cents
-        const totalPriceCents = Math.round(breakdown.total * 100);
-        validatedData.totalPrice = totalPriceCents;
+        validatedData.totalPrice = Math.round(breakdown.total * 100); // Convert to cents
       } catch (err) {
         console.error('Failed to recompute price, proceeding with submitted price:', err);
       }

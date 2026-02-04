@@ -2,8 +2,8 @@ import { googleSheetsService } from "./googleSheets";
 
 export interface PriceRequest {
   roomType: string;
-  checkIn: string; // yyyy-mm-dd
-  checkOut: string; // yyyy-mm-dd
+  checkIn: string;   // yyyy-mm-dd
+  checkOut: string;  // yyyy-mm-dd
   guests: number;
 }
 
@@ -12,22 +12,14 @@ export interface PriceBreakdown {
   pricePerNight: number;
   roomCost: number;
   cleaningFee: number;
-  extraGuestFeePerDay: number;
+  extraGuestFeePerNight: number;
   extraGuests: number;
   extraGuestFeeTotal: number;
   total: number;
 }
 
-// Fallback pricing if Google Sheets doesn't contain room rates
-const DEFAULT_ROOM_PRICING: { [key: string]: number } = {
-  "single-bed": 80,
-  "double-bed": 100,
-  "bunk-bed": 90,
-  "whole-house": 150,
-};
-
-// Room type mapping from API IDs to sheet names
-const ROOM_TYPE_MAP: { [key: string]: string } = {
+// API room ID to sheet room name mapping
+const ROOM_TYPE_MAP: { [apiId: string]: string } = {
   "single-bed": "2x Single Bed Bedroom",
   "double-bed": "Double Bed Bedroom",
   "bunk-bed": "Bunk Bed Bedroom",
@@ -41,43 +33,45 @@ export async function computePrice(req: PriceRequest): Promise<PriceBreakdown> {
   const end = new Date(checkOut);
   const nights = Math.max(0, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
 
-  // Fetch per-night prices for the room between the dates (each row in sheet corresponds to a date)
+  // Get sheet room name
   const sheetRoomName = ROOM_TYPE_MAP[roomType];
-  const perNight = await googleSheetsService.getPerNightPricesForRoom(sheetRoomName, checkIn, checkOut);
+  if (!sheetRoomName) {
+    throw new Error(`Unknown room type: ${roomType}`);
+  }
 
+  // Fetch per-night prices from Google Sheet
+  const perNightPrices = await googleSheetsService.getPerNightPricesForRoom(
+    sheetRoomName,
+    checkIn,
+    checkOut
+  );
+
+  // Sum up room costs from per-night data
   let roomCost = 0;
-  let foundAny = false;
-  const perNightPrices: Array<number | null> = [];
-  for (const p of perNight) {
-    if (p.price === null || p.price === undefined) {
-      perNightPrices.push(null);
-    } else {
-      perNightPrices.push(p.price);
-      roomCost += p.price;
-      foundAny = true;
+  let validNightCount = 0;
+  for (const { price } of perNightPrices) {
+    if (price !== null && price !== undefined) {
+      roomCost += price;
+      validNightCount++;
     }
   }
 
-  let pricePerNight: number;
-  if (foundAny) {
-    // Calculate average nightly price across all nights in the booking period for UI display
-    const validPrices = perNightPrices.filter((v) => v !== null) as number[];
-    pricePerNight = validPrices.length > 0 ? roomCost / validPrices.length : (DEFAULT_ROOM_PRICING[roomType] ?? DEFAULT_ROOM_PRICING['whole-house']);
-  } else {
-    // fallback: try sheet-wide single value or default
-    const sheetPrices = await googleSheetsService.getRoomNightlyPrices();
-    pricePerNight = sheetPrices[sheetRoomName] ?? DEFAULT_ROOM_PRICING[roomType] ?? DEFAULT_ROOM_PRICING["whole-house"];
-    roomCost = nights * pricePerNight;
+  // Calculate average nightly price for display
+  let pricePerNight = validNightCount > 0 ? roomCost / validNightCount : 0;
+
+  // Get cleaning fee (once per booking, not per night)
+  const cleaningFee = await googleSheetsService.getCleaningFee(roomType as any);
+
+  // Calculate extra guest fees (only for whole house, guests > 6)
+  let extraGuestFeePerNight = 0;
+  let extraGuests = 0;
+  let extraGuestFeeTotal = 0;
+
+  if (roomType === "whole-house" && guests > 6) {
+    extraGuests = guests - 6;
+    extraGuestFeePerNight = await googleSheetsService.getExtraGuestFeePerNight(checkIn, checkOut);
+    extraGuestFeeTotal = extraGuests * extraGuestFeePerNight * nights;
   }
-
-  const wholeHouseCleaningFee = await googleSheetsService.getWholeHouseCleaningFee();
-  const roomCleaningFee = await googleSheetsService.getRoomCleaningFee();
-
-  const cleaningFee = roomType === "whole-house" ? wholeHouseCleaningFee : roomCleaningFee;
-
-  const extraGuestFeePerDay = await googleSheetsService.getExtraGuestFeeForDateRange(checkIn, checkOut);
-  const extraGuests = roomType === "whole-house" && guests > 6 ? guests - 6 : 0;
-  const extraGuestFeeTotal = extraGuests * extraGuestFeePerDay * nights;
 
   const total = roomCost + cleaningFee + extraGuestFeeTotal;
 
@@ -86,7 +80,7 @@ export async function computePrice(req: PriceRequest): Promise<PriceBreakdown> {
     pricePerNight,
     roomCost,
     cleaningFee,
-    extraGuestFeePerDay,
+    extraGuestFeePerNight,
     extraGuests,
     extraGuestFeeTotal,
     total,

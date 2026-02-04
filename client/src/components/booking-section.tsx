@@ -72,137 +72,50 @@ export default function BookingSection() {
     queryKey: ["/api/bookings"],
   });
   
-  // Fetch Google Sheets availability data
-  const { data: sheetsAvailability = {} } = useQuery<{ [key: string]: string[] }>({
-    queryKey: ["/api/availability"],
-    refetchInterval: 1 * 60 * 1000, // Refetch every 1 minute
-  });
-
-  // Fetch cleaning fees from Google Sheets cells N2 and O2
-  const { data: cleaningFeeData } = useQuery<{ wholeHouseCleaningFee: number; roomCleaningFee: number }>({
-    queryKey: ["/api/cleaning-fee"],
-    refetchInterval: 1 * 60 * 1000, // Refetch every 1 minute to stay in sync with sheets
-  });
-
-  const wholeHouseCleaningFee = cleaningFeeData?.wholeHouseCleaningFee || 0;
-  const roomCleaningFee = cleaningFeeData?.roomCleaningFee || 0;
-
-  // Fetch extra guest fee for specific date range (only when dates are selected)
-  const { data: extraGuestFeeData } = useQuery<{ extraGuestFee: number }>({
-    queryKey: ["/api/extra-guest-fee", checkInDate ? format(checkInDate, "yyyy-MM-dd") : null, checkOutDate ? format(checkOutDate, "yyyy-MM-dd") : null],
-    queryFn: async () => {
-      if (!checkInDate || !checkOutDate) return { extraGuestFee: 0 };
-      const startDate = format(checkInDate, "yyyy-MM-dd");
-      const endDate = format(checkOutDate, "yyyy-MM-dd");
-      const response = await fetch(`/api/extra-guest-fee?startDate=${startDate}&endDate=${endDate}`);
-      return response.json();
-    },
-    enabled: !!(checkInDate && checkOutDate), // Only fetch when both dates are selected
-  });
-
-  const extraGuestFeePerDay = extraGuestFeeData?.extraGuestFee || 0;
-
   // Server-side price breakdown (fetched from /api/price)
   const [serverPrice, setServerPrice] = useState<{
     nights: number;
+    pricePerNight: number;
     roomCost: number;
     cleaningFee: number;
-    extraGuestFeePerDay: number;
+    extraGuestFeePerNight: number;
     extraGuests: number;
     extraGuestFeeTotal: number;
     total: number;
-    pricePerNight?: number;
   } | null>(null);
+  const [priceLoading, setPriceLoading] = useState(false);
 
-  // Fetch live price when inputs change — poll every 5s while dates selected
+  // Fetch live price when inputs change
   useEffect(() => {
-    let mounted = true;
-    let intervalId: number | undefined;
-
     const fetchPrice = async () => {
       if (!checkInDate || !checkOutDate) {
-        if (mounted) setServerPrice(null);
+        setServerPrice(null);
         return;
       }
 
       const start = format(checkInDate, "yyyy-MM-dd");
       const end = format(checkOutDate, "yyyy-MM-dd");
+      setPriceLoading(true);
       try {
         const resp = await fetch(
           `/api/price?roomType=${encodeURIComponent(selectedRoom)}&checkIn=${start}&checkOut=${end}&guests=${guests}`
         );
         if (!resp.ok) {
-          if (mounted) setServerPrice(null);
+          setServerPrice(null);
+          setPriceLoading(false);
           return;
         }
         const data = await resp.json();
-        if (mounted) setServerPrice(data);
+        setServerPrice(data);
       } catch (e) {
-        if (mounted) setServerPrice(null);
+        setServerPrice(null);
+      } finally {
+        setPriceLoading(false);
       }
     };
 
-    // initial fetch
     fetchPrice();
-
-    // start polling every 5s
-    if (checkInDate && checkOutDate) {
-      intervalId = window.setInterval(fetchPrice, 5000);
-    }
-
-    return () => {
-      mounted = false;
-      if (intervalId) clearInterval(intervalId);
-    };
   }, [checkInDate, checkOutDate, selectedRoom, guests]);
-
-  // Fetch prices for all room types when dates change so cards can show live per-night rates
-  const [priceMap, setPriceMap] = useState<Record<string, { pricePerNight: number; nights: number; total: number } | null>>({});
-
-  useEffect(() => {
-    let mounted = true;
-    let intervalId: number | undefined;
-
-    const fetchAll = async () => {
-      if (!checkInDate || !checkOutDate) {
-        if (mounted) setPriceMap({});
-        return;
-      }
-
-      const start = format(checkInDate, "yyyy-MM-dd");
-      const end = format(checkOutDate, "yyyy-MM-dd");
-
-      const entries = await Promise.all(
-        roomOptions.map(async (room) => {
-          try {
-            const resp = await fetch(
-              `/api/price?roomType=${encodeURIComponent(room.id)}&checkIn=${start}&checkOut=${end}&guests=${guests}`
-            );
-            if (!resp.ok) return [room.id, null] as const;
-            const data = await resp.json();
-            return [room.id, { pricePerNight: data.pricePerNight, nights: data.nights, total: data.total }] as const;
-          } catch (e) {
-            return [room.id, null] as const;
-          }
-        })
-      );
-
-      if (mounted) setPriceMap(Object.fromEntries(entries));
-    };
-
-    // initial fetch
-    fetchAll();
-
-    // poll every 5s while dates selected
-    if (checkInDate && checkOutDate) {
-      intervalId = window.setInterval(fetchAll, 5000);
-    }
-
-    return () => {
-      mounted = false;
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [checkInDate, checkOutDate, guests]);
 
   // Get unavailable dates from existing bookings for selected room type
   const bookingUnavailableDates = bookings
@@ -219,31 +132,13 @@ export default function BookingSection() {
       return dates;
     });
     
-  // Get blocked dates from Google Sheets for selected room type
-  const roomTypeMap: { [key: string]: string } = {
-    "single-bed": "2x Single Bed Bedroom",
-    "double-bed": "Double Bed Bedroom", 
-    "bunk-bed": "Bunk Bed Bedroom",
-    "whole-house": "Whole House"
-  };
-  
-  const currentRoomSheetName = roomTypeMap[selectedRoom];
-  const sheetsBlockedDates = currentRoomSheetName && sheetsAvailability[currentRoomSheetName] 
-    ? sheetsAvailability[currentRoomSheetName].map(dateStr => new Date(dateStr))
-    : [];
-    
-  // Also check if "Whole House" is blocked when booking individual rooms
-  const wholeHouseBlockedDates = selectedRoom !== "whole-house" && sheetsAvailability["Whole House"]
-    ? sheetsAvailability["Whole House"].map(dateStr => new Date(dateStr))
-    : [];
-    
-  // Combine all unavailable dates
-  const unavailableDates = [...bookingUnavailableDates, ...sheetsBlockedDates, ...wholeHouseBlockedDates];
+  // Use booking dates as unavailable dates (Google Sheets availability handled server-side)
+  const unavailableDates = bookingUnavailableDates;
 
   const createBookingMutation = useMutation({
     mutationFn: async (bookingData: any) => {
-      // If we have a server-side price, prefer submitting that authoritative value
-      if ((bookingData as any) && serverPrice) {
+      // If we have a server-side price, use the authoritative value
+      if (serverPrice) {
         bookingData.totalPrice = Math.round(serverPrice.total * 100);
       }
       const response = await apiRequest("POST", "/api/bookings", bookingData);
@@ -310,12 +205,9 @@ export default function BookingSection() {
     if (serverPrice) {
       totalPrice = Math.round(serverPrice.total * 100);
     } else {
+      // Fallback: use hardcoded price if server price not yet loaded
       const roomCost = nights * currentRoom.pricePerNight;
-      const applicableCleaningFee = selectedRoom === "whole-house" ? wholeHouseCleaningFee : roomCleaningFee;
-      // Calculate extra guest fee (only for whole house bookings with more than 6 guests)
-      const extraGuests = selectedRoom === "whole-house" && guests > 6 ? guests - 6 : 0;
-      const extraGuestFee = extraGuests * extraGuestFeePerDay;
-      totalPrice = Math.round((roomCost + applicableCleaningFee + extraGuestFee) * 100); // Convert to cents
+      totalPrice = Math.round(roomCost * 100);
     }
 
     createBookingMutation.mutate({
@@ -346,15 +238,8 @@ export default function BookingSection() {
     ? Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
     : 0;
   
-  const roomCost = serverPrice ? serverPrice.roomCost : nights * currentRoom.pricePerNight;
-  const applicableWholeHouseCleaningFee = serverPrice ? serverPrice.cleaningFee : (selectedRoom === "whole-house" ? wholeHouseCleaningFee : 0);
-  const applicableRoomCleaningFee = serverPrice ? 0 : (selectedRoom !== "whole-house" ? roomCleaningFee : 0);
-
-  // Calculate extra guest fee for display (only for whole house bookings with more than 6 guests)
-  const extraGuests = serverPrice ? serverPrice.extraGuests : (selectedRoom === "whole-house" && guests > 6 ? guests - 6 : 0);
-  const extraGuestFee = serverPrice ? serverPrice.extraGuestFeeTotal : (extraGuests * extraGuestFeePerDay);
-
-  const totalPrice = serverPrice ? serverPrice.total : (roomCost + applicableWholeHouseCleaningFee + applicableRoomCleaningFee + extraGuestFee);
+  const displayPrice = serverPrice ? serverPrice.total : 0;
+  const displayPricePerNight = serverPrice ? serverPrice.pricePerNight : currentRoom.pricePerNight;
 
   return (
     <section id="booking" className="py-16 bg-airbnb-light">
@@ -415,7 +300,7 @@ export default function BookingSection() {
                             Up to {room.maxGuests} guests
                           </span>
                           <span className="font-semibold text-airbnb-dark">
-                            €{(priceMap[room.id]?.pricePerNight ?? room.pricePerNight)}/night
+                            €{selectedRoom === room.id && serverPrice ? serverPrice.pricePerNight : room.pricePerNight}/night
                           </span>
                         </div>
                       </div>
@@ -527,7 +412,7 @@ export default function BookingSection() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-airbnb-gray">Rate:</span>
-                      <span className="text-airbnb-dark font-medium">€{(serverPrice?.pricePerNight ?? priceMap[selectedRoom]?.pricePerNight ?? currentRoom.pricePerNight)}/night</span>
+                      <span className="text-airbnb-dark font-medium">€{displayPricePerNight}/night{priceLoading && " (loading...)"}</span>
                     </div>
                     
                     {checkInDate && checkOutDate && (
@@ -550,24 +435,24 @@ export default function BookingSection() {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-airbnb-gray">Rate:</span>
-                          <span className="text-airbnb-dark font-medium">€{(serverPrice?.pricePerNight ?? priceMap[selectedRoom]?.pricePerNight ?? currentRoom.pricePerNight)} × {nights}</span>
+                          <span className="text-airbnb-dark font-medium">€{displayPricePerNight} × {nights}</span>
                         </div>
-                        {selectedRoom === "whole-house" && applicableWholeHouseCleaningFee > 0 && (
+                        {serverPrice && selectedRoom === "whole-house" && serverPrice.cleaningFee > 0 && (
                           <div className="flex justify-between">
                             <span className="text-airbnb-gray">Whole house cleaning fee:</span>
-                            <span className="text-airbnb-dark font-medium">€{applicableWholeHouseCleaningFee}</span>
+                            <span className="text-airbnb-dark font-medium">€{serverPrice.cleaningFee}</span>
                           </div>
                         )}
-                        {selectedRoom !== "whole-house" && applicableRoomCleaningFee > 0 && (
+                        {serverPrice && selectedRoom !== "whole-house" && serverPrice.cleaningFee > 0 && (
                           <div className="flex justify-between">
                             <span className="text-airbnb-gray">Room cleaning fee:</span>
-                            <span className="text-airbnb-dark font-medium">€{applicableRoomCleaningFee}</span>
+                            <span className="text-airbnb-dark font-medium">€{serverPrice.cleaningFee}</span>
                           </div>
                         )}
-                        {selectedRoom === "whole-house" && extraGuests > 0 && extraGuestFee > 0 && (
+                        {serverPrice && selectedRoom === "whole-house" && serverPrice.extraGuests > 0 && serverPrice.extraGuestFeeTotal > 0 && (
                           <div className="flex justify-between">
                             <span className="text-airbnb-gray">Extra fee/guest above 6 guests:</span>
-                            <span className="text-airbnb-dark font-medium">€{extraGuestFeePerDay} × {extraGuests} = €{extraGuestFee}</span>
+                            <span className="text-airbnb-dark font-medium">€{serverPrice.extraGuestFeePerNight} × {serverPrice.extraGuests} = €{serverPrice.extraGuestFeeTotal}</span>
                           </div>
                         )}
                       </>
@@ -577,7 +462,7 @@ export default function BookingSection() {
                   <div className="mt-6 pt-4 border-t border-gray-200">
                     <div className="flex justify-between font-semibold text-airbnb-dark">
                       <span>Total:</span>
-                      <span data-testid="booking-total">€{totalPrice}</span>
+                      <span data-testid="booking-total">€{displayPrice}{priceLoading && " (loading...)"}</span>
                     </div>
                   </div>
                 </div>
