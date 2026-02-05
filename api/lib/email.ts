@@ -67,9 +67,7 @@ export async function sendBookingNotification(booking: Booking): Promise<boolean
     });
 
     const nights = Math.ceil((new Date(booking.checkOut).getTime() - new Date(booking.checkIn).getTime()) / (1000 * 60 * 60 * 24));
-    const totalPrice = nights * (booking.roomType === 'single-bed' ? 80 : 
-                                booking.roomType === 'double-bed' ? 100 :
-                                booking.roomType === 'bunk-bed' ? 90 : 150);
+    const totalPrice = booking.totalPrice && booking.totalPrice > 0 ? booking.totalPrice / 100 : null;
 
     const emailContent = `
 🏠 New Booking Received - Verőce Hills Guest House
@@ -91,10 +89,8 @@ export async function sendBookingNotification(booking: Booking): Promise<boolean
 
 💰 PRICING:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-• Rate: €${booking.roomType === 'single-bed' ? 80 : 
-            booking.roomType === 'double-bed' ? 100 :
-            booking.roomType === 'bunk-bed' ? 90 : 150}/night
-• Total: €${totalPrice}
+• Rate: See pricing table on the website
+• Total: ${totalPrice !== null ? `€${totalPrice}` : 'See pricing table'}
 
 ⏰ Booking submitted: ${new Date().toLocaleString('en-GB')}
 

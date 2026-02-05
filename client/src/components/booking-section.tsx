@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { format, addDays, isAfter, isBefore, parseISO } from "date-fns";
 import type { Booking } from "@shared/schema";
+import PricingTable from "./pricing-table";
 
 // Import optimized image component
 import OptimizedImage from "@/components/OptimizedImage";
@@ -72,50 +73,7 @@ export default function BookingSection() {
     queryKey: ["/api/bookings"],
   });
   
-  // Server-side price breakdown (fetched from /api/price)
-  const [serverPrice, setServerPrice] = useState<{
-    nights: number;
-    pricePerNight: number;
-    roomCost: number;
-    cleaningFee: number;
-    extraGuestFeePerNight: number;
-    extraGuests: number;
-    extraGuestFeeTotal: number;
-    total: number;
-  } | null>(null);
-  const [priceLoading, setPriceLoading] = useState(false);
-
-  // Fetch live price when inputs change
-  useEffect(() => {
-    const fetchPrice = async () => {
-      if (!checkInDate || !checkOutDate) {
-        setServerPrice(null);
-        return;
-      }
-
-      const start = format(checkInDate, "yyyy-MM-dd");
-      const end = format(checkOutDate, "yyyy-MM-dd");
-      setPriceLoading(true);
-      try {
-        const resp = await fetch(
-          `/api/price?roomType=${encodeURIComponent(selectedRoom)}&checkIn=${start}&checkOut=${end}&guests=${guests}`
-        );
-        if (!resp.ok) {
-          setServerPrice(null);
-          setPriceLoading(false);
-          return;
-        }
-        const data = await resp.json();
-        setServerPrice(data);
-      } catch (e) {
-        setServerPrice(null);
-      } finally {
-        setPriceLoading(false);
-      }
-    };
-
-    fetchPrice();
-  }, [checkInDate, checkOutDate, selectedRoom, guests]);
+  // Pricing has been removed — a static pricing table is shown instead.
 
   // Get unavailable dates from existing bookings for selected room type
   const bookingUnavailableDates = bookings
@@ -137,10 +95,8 @@ export default function BookingSection() {
 
   const createBookingMutation = useMutation({
     mutationFn: async (bookingData: any) => {
-      // If we have a server-side price, use the authoritative value
-      if (serverPrice) {
-        bookingData.totalPrice = Math.round(serverPrice.total * 100);
-      }
+      // Pricing is no longer computed by the app; send a placeholder totalPrice (0 cents)
+      bookingData.totalPrice = 0;
       const response = await apiRequest("POST", "/api/bookings", bookingData);
       return response.json();
     },
@@ -201,14 +157,8 @@ export default function BookingSection() {
 
     const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
 
-    let totalPrice: number;
-    if (serverPrice) {
-      totalPrice = Math.round(serverPrice.total * 100);
-    } else {
-      // Fallback: use hardcoded price if server price not yet loaded
-      const roomCost = nights * currentRoom.pricePerNight;
-      totalPrice = Math.round(roomCost * 100);
-    }
+    // Pricing calculations removed from the client. Submit `0` as totalPrice (in cents).
+    const totalPrice = 0;
 
     createBookingMutation.mutate({
       checkIn: format(checkInDate, "yyyy-MM-dd"),
@@ -238,8 +188,8 @@ export default function BookingSection() {
     ? Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
     : 0;
   
-  const displayPrice = serverPrice ? serverPrice.total : 0;
-  const displayPricePerNight = serverPrice ? serverPrice.pricePerNight : currentRoom.pricePerNight;
+  const displayPrice = 0;
+  const displayPricePerNight = currentRoom.pricePerNight;
 
   return (
     <section id="booking" className="py-16 bg-airbnb-light">
@@ -295,13 +245,8 @@ export default function BookingSection() {
                             </Badge>
                           ))}
                         </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-airbnb-gray">
-                            Up to {room.maxGuests} guests
-                          </span>
-                          <span className="font-semibold text-airbnb-dark">
-                            €{selectedRoom === room.id && serverPrice ? serverPrice.pricePerNight : room.pricePerNight}/night
-                          </span>
+                        <div className="flex justify-start items-center">
+                          <span className="text-xs text-airbnb-gray">Up to {room.maxGuests} guests</span>
                         </div>
                       </div>
                       {selectedRoom === room.id && (
@@ -312,6 +257,12 @@ export default function BookingSection() {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Pricing Section (placed under Choose Your Room) */}
+              <div className="mt-6">
+                <h3 className="text-xl font-semibold text-airbnb-dark mb-4">Pricing</h3>
+                <PricingTable />
               </div>
               
               <div className="grid md:grid-cols-2 gap-8">
@@ -410,10 +361,7 @@ export default function BookingSection() {
                       <span className="text-airbnb-gray">Max Capacity:</span>
                       <span className="text-airbnb-dark font-medium">Up to {currentRoom.maxGuests} guests</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-airbnb-gray">Rate:</span>
-                      <span className="text-airbnb-dark font-medium">€{displayPricePerNight}/night{priceLoading && " (loading...)"}</span>
-                    </div>
+                    
                     
                     {checkInDate && checkOutDate && (
                       <>
@@ -433,41 +381,36 @@ export default function BookingSection() {
                           <span className="text-airbnb-gray">Nights:</span>
                           <span className="text-airbnb-dark font-medium">{nights}</span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-airbnb-gray">Rate:</span>
-                          <span className="text-airbnb-dark font-medium">€{displayPricePerNight} × {nights}</span>
+                        <div className="mt-4 text-sm text-airbnb-gray">
+                          Pricing details and totals are shown in the table below. Please consult the table for nightly rates by month and guest count. Cleaning fee and minimum nights are listed below the table.
                         </div>
-                        {serverPrice && selectedRoom === "whole-house" && serverPrice.cleaningFee > 0 && (
-                          <div className="flex justify-between">
-                            <span className="text-airbnb-gray">Whole house cleaning fee:</span>
-                            <span className="text-airbnb-dark font-medium">€{serverPrice.cleaningFee}</span>
-                          </div>
-                        )}
-                        {serverPrice && selectedRoom !== "whole-house" && serverPrice.cleaningFee > 0 && (
-                          <div className="flex justify-between">
-                            <span className="text-airbnb-gray">Room cleaning fee:</span>
-                            <span className="text-airbnb-dark font-medium">€{serverPrice.cleaningFee}</span>
-                          </div>
-                        )}
-                        {serverPrice && selectedRoom === "whole-house" && serverPrice.extraGuests > 0 && serverPrice.extraGuestFeeTotal > 0 && (
-                          <div className="flex justify-between">
-                            <span className="text-airbnb-gray">Extra fee/guest above 6 guests:</span>
-                            <span className="text-airbnb-dark font-medium">€{serverPrice.extraGuestFeePerNight} × {serverPrice.extraGuests} = €{serverPrice.extraGuestFeeTotal}</span>
-                          </div>
-                        )}
                       </>
                     )}
                   </div>
                   
-                  <div className="mt-6 pt-4 border-t border-gray-200">
-                    <div className="flex justify-between font-semibold text-airbnb-dark">
-                      <span>Total:</span>
-                      <span data-testid="booking-total">€{displayPrice}{priceLoading && " (loading...)"}</span>
-                    </div>
-                  </div>
+                  
                 </div>
               </div>
+
               
+              {/* Airbnb Availability Notice */}
+              <div className="mt-8 mb-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
+                <p className="text-sm text-gray-700">
+                  <span className="block mb-2">To check our availability, please visit my Airbnb page:</span>
+                  <a 
+                    href="https://www.airbnb.com/rooms/1116745547398137237?guests=1&adults=1&s=67&unique_share_id=71abcd0c-dcc6-47b0-bed4-d210748c16d3"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-airbnb-red hover:underline font-semibold"
+                  >
+                    InSpiral Guest House
+                  </a>
+                </p>
+                <p className="text-sm text-gray-700 mt-3">
+                  Make sure you book on this website to get the lowest prices.
+                </p>
+              </div>
+
               {/* Calendar Display */}
               <div className="mt-8">
                 <h3 className="text-xl font-semibold text-airbnb-dark mb-4">

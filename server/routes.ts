@@ -4,7 +4,6 @@ import { storage } from "./storage";
 import { insertBookingSchema } from "@shared/schema";
 import { z } from "zod";
 import { googleSheetsService } from "./googleSheets";
-import { computePrice } from "./pricing";
 import { emailService } from "./emailService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -38,29 +37,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Compute pricing for a booking
-  app.get("/api/price", async (req, res) => {
-    try {
-      const { roomType, checkIn, checkOut, guests } = req.query;
-
-      if (!roomType || !checkIn || !checkOut || !guests) {
-        res.status(400).json({ message: "roomType, checkIn, checkOut and guests are required" });
-        return;
-      }
-
-      const breakdown = await computePrice({
-        roomType: roomType as string,
-        checkIn: checkIn as string,
-        checkOut: checkOut as string,
-        guests: parseInt(guests as string, 10),
-      });
-
-      res.json(breakdown);
-    } catch (error) {
-      console.error('Error computing price:', error);
-      res.status(500).json({ message: 'Failed to compute price' });
-    }
-  });
+  // Pricing endpoint removed. All pricing calculation has been removed from the server.
   // Create a new booking
   app.post("/api/bookings", async (req, res) => {
     try {
@@ -110,18 +87,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return;
       }
       
-      // Recompute authoritative price server-side and override client-submitted price
-      try {
-        const breakdown = await computePrice({
-          roomType: validatedData.roomType,
-          checkIn: validatedData.checkIn,
-          checkOut: validatedData.checkOut,
-          guests: validatedData.guests,
-        });
-        validatedData.totalPrice = Math.round(breakdown.total * 100); // Convert to cents
-      } catch (err) {
-        console.error('Failed to recompute price, proceeding with submitted price:', err);
-      }
+      // Pricing computation removed: server will no longer recompute or validate prices.
+      // The submitted `totalPrice` will be stored as provided by the client.
 
       const booking = await storage.createBooking(validatedData);
       
