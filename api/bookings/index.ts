@@ -3,6 +3,7 @@ import { handleCors } from '../lib/cors';
 import { getBookings, createBooking, getBookingsByDateRange, type InsertBooking } from '../lib/storage';
 // Google Sheets availability removed
 import { sendBookingNotification } from '../lib/email';
+import { parseISO, isAfter, isBefore } from 'date-fns';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (handleCors(req, res)) return;
@@ -37,13 +38,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           message: 'The selected room/dates are not available. Please choose different dates or room type.' 
         });
       }
-      
+
       // Google Sheets availability checks removed
       
-      const checkInDate = new Date(data.checkIn);
-      const checkOutDate = new Date(data.checkOut);
+      // Parse dates using date-fns for more reliable timezone handling
+      const checkInDate = parseISO(data.checkIn);
+      const checkOutDate = parseISO(data.checkOut);
       
-      if (checkInDate >= checkOutDate) {
+      if (!isAfter(checkOutDate, checkInDate)) {
         return res.status(400).json({ 
           message: 'Check-out date must be after check-in date' 
         });
@@ -52,7 +54,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
-      if (checkInDate < today) {
+      if (isBefore(checkInDate, today)) {
         return res.status(400).json({ 
           message: 'Check-in date must be in the future' 
         });
@@ -60,11 +62,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       
       const booking = createBooking(data);
       
-      try {
-        await sendBookingNotification(booking);
-      } catch (error) {
+      // Send email notification asynchronously without blocking the response
+      sendBookingNotification(booking).catch(error => {
         console.error('Failed to send booking notification email:', error);
-      }
+      });
       
       return res.status(201).json(booking);
     } catch (error) {

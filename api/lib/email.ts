@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { format, differenceInDays } from 'date-fns';
 
 interface Booking {
   id: string;
@@ -53,24 +54,21 @@ export async function sendBookingNotification(booking: Booking): Promise<boolean
     };
 
     const roomName = roomTypeMap[booking.roomType] || booking.roomType;
-    const checkInDate = new Date(booking.checkIn).toLocaleDateString('en-GB', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-    const checkOutDate = new Date(booking.checkOut).toLocaleDateString('en-GB', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-
-    const nights = Math.ceil((new Date(booking.checkOut).getTime() - new Date(booking.checkIn).getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Parse dates safely using date-fns
+    const checkInDate = new Date(booking.checkIn);
+    const checkOutDate = new Date(booking.checkOut);
+    
+    const checkInFormatted = format(checkInDate, 'EEEE, MMMM d, yyyy');
+    const checkOutFormatted = format(checkOutDate, 'EEEE, MMMM d, yyyy');
+    
+    // Calculate number of nights (add 1 day to account for full day difference)
+    const nights = Math.max(1, differenceInDays(checkOutDate, checkInDate));
+    
     const totalPrice = booking.totalPrice && booking.totalPrice > 0 ? booking.totalPrice / 100 : null;
 
     const emailContent = `
-🏠 New Booking Received - Verőce Hills Guest House
+🏠 New Booking Received - InSpiral Guest House
 
 📋 BOOKING DETAILS:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -78,13 +76,13 @@ export async function sendBookingNotification(booking: Booking): Promise<boolean
 • Room Type: ${roomName}
 • Guest Name: ${booking.guestName}
 • Email: ${booking.guestEmail}
-• Phone: ${booking.guestPhone}
+• Phone: ${booking.guestPhone || 'Not provided'}
 • Number of Guests: ${booking.guests}
 
 📅 DATES:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-• Check-in: ${checkInDate}
-• Check-out: ${checkOutDate}
+• Check-in: ${checkInFormatted}
+• Check-out: ${checkOutFormatted}
 • Duration: ${nights} night${nights > 1 ? 's' : ''}
 
 💰 PRICING:
@@ -92,14 +90,14 @@ export async function sendBookingNotification(booking: Booking): Promise<boolean
 • Rate: See pricing table on the website
 • Total: ${totalPrice !== null ? `€${totalPrice}` : 'See pricing table'}
 
-⏰ Booking submitted: ${new Date().toLocaleString('en-GB')}
+⏰ Booking submitted: ${format(new Date(), 'PPpp')}
 
 Please contact the guest to confirm their booking and arrange payment details.
     `;
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: 'valeriano.donzelli@gmail.com',
+      to: 'ivanyi.david96@gmail.com',
       subject: `🏠 New Booking: ${booking.guestName} - ${roomName}`,
       text: emailContent,
       html: emailContent.replace(/\n/g, '<br>').replace(/━/g, '─')
