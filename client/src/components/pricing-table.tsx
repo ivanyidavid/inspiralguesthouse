@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const months = [
   "February",
@@ -32,66 +33,75 @@ const weekendPrices: Record<string, number[]> = {
   August: [160, 175, 190, 205, 220, 235],
 };
 
+interface PriceTableProps {
+  showAllGuests?: boolean;
+  setShowAllGuests?: (show: boolean) => void;
+}
+
+function PriceTableComponent({ title, prices, showAllGuests, setShowAllGuests }: PriceTableProps & { title: string; prices: Record<string, number[]> }) {
+  const visibleGuestCols = showAllGuests ? guestCols : [guestCols[0]];
+
+  return (
+    <div>
+      <h4 className="font-medium mb-4">{title}</h4>
+      <div className="overflow-x-auto mb-4">
+        <table className="w-full text-sm border-collapse">
+          <thead>
+            <tr className="bg-airbnb-red text-white">
+              <th className="px-4 py-2 text-left font-semibold">Guests</th>
+              {visibleGuestCols.map((g) => (
+                <th key={g} className="px-4 py-2 text-center font-semibold">{g}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {months.map((m) => (
+              <tr key={m} className="border-t">
+                <td className="px-4 py-2 font-medium text-airbnb-dark">{m}</td>
+                {visibleGuestCols.map((_, i) => (
+                  <td key={i} className="px-4 py-2 text-center">€{prices[m][i]}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {!showAllGuests && (
+        <Button
+          onClick={() => setShowAllGuests?.(true)}
+          variant="outline"
+          size="sm"
+          className="text-airbnb-red border-airbnb-red hover:bg-red-50"
+        >
+          for more guests click <span className="underline ml-1">Here</span>
+        </Button>
+      )}
+    </div>
+  );
+}
+
 export default function PricingTable() {
+  const [showAllGuests, setShowAllGuests] = useState(false);
+
   return (
     <section className="bg-white rounded-2xl shadow p-6">
-      <h3 className="text-2xl font-semibold text-airbnb-dark mb-4">Pricing</h3>
-
       <div className="grid gap-8 md:grid-cols-2">
-        <div>
-          <h4 className="font-medium mb-2">Weekday Prices (Sunday-Thursday nights)</h4>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="text-left text-airbnb-gray">
-                  <th className="pr-4 pb-2">Month</th>
-                  {guestCols.map((g) => (
-                    <th key={g} className="pr-4 pb-2">{g}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {months.map((m) => (
-                  <tr key={m} className="border-t">
-                    <td className="py-2 font-medium">{m}</td>
-                    {weekdayPrices[m].map((p, i) => (
-                      <td key={i} className="py-2">€{p}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <PriceTableComponent
+          title="Weekday Prices (Sunday-Thursday nights)"
+          prices={weekdayPrices}
+          showAllGuests={showAllGuests}
+          setShowAllGuests={setShowAllGuests}
+        />
 
-        <div>
-          <h4 className="font-medium mb-2">Weekend Prices (Friday-Saturday nights)</h4>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="text-left text-airbnb-gray">
-                  <th className="pr-4 pb-2">Month</th>
-                  {guestCols.map((g) => (
-                    <th key={g} className="pr-4 pb-2">{g}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {months.map((m) => (
-                  <tr key={m} className="border-t">
-                    <td className="py-2 font-medium">{m}</td>
-                    {weekendPrices[m].map((p, i) => (
-                      <td key={i} className="py-2">€{p}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <PriceTableComponent
+          title="Weekend Prices (Friday-Saturday nights)"
+          prices={weekendPrices}
+          showAllGuests={showAllGuests}
+          setShowAllGuests={setShowAllGuests}
+        />
       </div>
 
-      <div className="mt-4 text-sm text-airbnb-gray">
+      <div className="mt-6 text-sm text-airbnb-gray">
         <div>Cleaning Cost: €50</div>
         <div>Minimum Nights: 2</div>
         <div className="mt-2">Exceptions apply for public holidays and specific events (Sziget Festival, F1, others).</div>

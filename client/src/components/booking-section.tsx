@@ -264,8 +264,78 @@ export default function BookingSection() {
                 <h3 className="text-xl font-semibold text-airbnb-dark mb-4">Pricing</h3>
                 <PricingTable />
               </div>
-              
-              <div className="grid md:grid-cols-2 gap-8">
+
+              {/* Calendar Display */}
+              <div className="mt-8">
+                <h3 className="text-xl font-semibold text-airbnb-dark mb-4">
+                  Select Your Dates
+                </h3>
+                <div className="bg-airbnb-light rounded-xl p-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <Label className="block text-sm font-medium text-airbnb-dark mb-2">
+                        Check-in Date
+                      </Label>
+                      <Calendar
+                        mode="single"
+                        selected={checkInDate}
+                        onSelect={setCheckInDate}
+                        disabled={isDateDisabled}
+                        className="rounded-md border"
+                        data-testid="calendar-checkin"
+                      />
+                    </div>
+                    <div>
+                      <Label className="block text-sm font-medium text-airbnb-dark mb-2">
+                        Check-out Date
+                      </Label>
+                      <Calendar
+                        mode="single"
+                        selected={checkOutDate}
+                        onSelect={setCheckOutDate}
+                        disabled={(date) => {
+                          if (!checkInDate) return isDateDisabled(date);
+                          return isDateDisabled(date) || !isAfter(date, checkInDate);
+                        }}
+                        className="rounded-md border"
+                        data-testid="calendar-checkout"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 flex items-center justify-center space-x-6 text-sm">
+                    <div className="flex items-center">
+                      <div className="w-4 h-4 bg-airbnb-red rounded mr-2"></div>
+                      <span className="text-airbnb-gray">Selected</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-4 h-4 bg-gray-300 rounded mr-2"></div>
+                      <span className="text-airbnb-gray">Unavailable</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Airbnb Availability Notice */}
+              <div className="mt-8 mb-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
+                <p className="text-sm text-gray-700">
+                  <span className="block mb-2">To check our availability, please visit my Airbnb page:</span>
+                  <a 
+                    href="https://www.airbnb.com/rooms/1116745547398137237?guests=1&adults=1&s=67&unique_share_id=71abcd0c-dcc6-47b0-bed4-d210748c16d3"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-airbnb-red hover:underline font-semibold"
+                  >
+                    InSpiral Guest House
+                  </a>
+                </p>
+                <p className="text-sm text-gray-700 mt-3">
+                  Make sure you book on this website to get the lowest prices.
+                </p>
+              </div>
+
+              {/* User Input Fields and Booking Summary */}
+              <div className="grid md:grid-cols-2 gap-8 mt-8">
                 {/* Booking Form */}
                 <div className="space-y-6">
                   <div>
@@ -382,83 +452,13 @@ export default function BookingSection() {
                           <span className="text-airbnb-dark font-medium">{nights}</span>
                         </div>
                         <div className="mt-4 text-sm text-airbnb-gray">
-                          Pricing details and totals are shown in the table below. Please consult the table for nightly rates by month and guest count. Cleaning fee and minimum nights are listed below the table.
+                          Pricing details are shown in the table above. Please consult the table for nightly rates by month and guest count. Cleaning fee and minimum nights are listed below the table.
                         </div>
                       </>
                     )}
                   </div>
                   
                   
-                </div>
-              </div>
-
-              
-              {/* Airbnb Availability Notice */}
-              <div className="mt-8 mb-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
-                <p className="text-sm text-gray-700">
-                  <span className="block mb-2">To check our availability, please visit my Airbnb page:</span>
-                  <a 
-                    href="https://www.airbnb.com/rooms/1116745547398137237?guests=1&adults=1&s=67&unique_share_id=71abcd0c-dcc6-47b0-bed4-d210748c16d3"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-airbnb-red hover:underline font-semibold"
-                  >
-                    InSpiral Guest House
-                  </a>
-                </p>
-                <p className="text-sm text-gray-700 mt-3">
-                  Make sure you book on this website to get the lowest prices.
-                </p>
-              </div>
-
-              {/* Calendar Display */}
-              <div className="mt-8">
-                <h3 className="text-xl font-semibold text-airbnb-dark mb-4">
-                  Select Your Dates
-                </h3>
-                <div className="bg-airbnb-light rounded-xl p-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <Label className="block text-sm font-medium text-airbnb-dark mb-2">
-                        Check-in Date
-                      </Label>
-                      <Calendar
-                        mode="single"
-                        selected={checkInDate}
-                        onSelect={setCheckInDate}
-                        disabled={isDateDisabled}
-                        className="rounded-md border"
-                        data-testid="calendar-checkin"
-                      />
-                    </div>
-                    <div>
-                      <Label className="block text-sm font-medium text-airbnb-dark mb-2">
-                        Check-out Date
-                      </Label>
-                      <Calendar
-                        mode="single"
-                        selected={checkOutDate}
-                        onSelect={setCheckOutDate}
-                        disabled={(date) => {
-                          if (!checkInDate) return isDateDisabled(date);
-                          return isDateDisabled(date) || !isAfter(date, checkInDate);
-                        }}
-                        className="rounded-md border"
-                        data-testid="calendar-checkout"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="mt-4 flex items-center justify-center space-x-6 text-sm">
-                    <div className="flex items-center">
-                      <div className="w-4 h-4 bg-airbnb-red rounded mr-2"></div>
-                      <span className="text-airbnb-gray">Selected</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-4 h-4 bg-gray-300 rounded mr-2"></div>
-                      <span className="text-airbnb-gray">Unavailable</span>
-                    </div>
-                  </div>
                 </div>
               </div>
             </form>
